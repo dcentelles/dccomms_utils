@@ -5,26 +5,14 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE   ON)
 
 #http://stackoverflow.com/questions/7787823/cmake-how-to-get-the-name-of-all-subdirectories-of-a-directory
-MACRO(GETPROJECTS result curdir)
+function(GETPROJECTS result curdir)
   FILE(GLOB children RELATIVE ${curdir} ${curdir}/*/CMakeLists.txt)
   FOREACH(file ${children})
         get_filename_component(subdir ${file} DIRECTORY)
         LIST(APPEND dirlist ${subdir})
   ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
-
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-        LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
-
+  SET(${result} ${dirlist} PARENT_SCOPE)
+endfunction()
 
 ###########
 ## Build ##
@@ -33,23 +21,15 @@ ENDMACRO()
 ####### HANDLE DEPENDENCIES ######
 
 SET(${PROJECT_NAME}_DEPS_DIR "modules")
-SUBDIRLIST(${PROJECT_NAME}_DEPS ${CMAKE_CURRENT_SOURCE_DIR}/${${PROJECT_NAME}_DEPS_DIR})
-message(STATUS "Dependencies found: ${${PROJECT_NAME}_DEPS}")
+SET(${PROJECT_NAME}_TMP0 ${CMAKE_CURRENT_SOURCE_DIR}/${${PROJECT_NAME}_DEPS_DIR})
+GETPROJECTS(${PROJECT_NAME}_DEPS ${${PROJECT_NAME}_TMP0})
+message(STATUS "Dependencies found in ${${PROJECT_NAME}_TMP0}: ${${PROJECT_NAME}_DEPS}")
 FOREACH(subdir ${${PROJECT_NAME}_DEPS})
 if (NOT TARGET ${subdir})
         add_subdirectory(${${PROJECT_NAME}_DEPS_DIR}/${subdir})
 endif()
 ENDFOREACH()
 
-######## HANDLE PROJECTS ######
-
-GETPROJECTS(projects ${CMAKE_CURRENT_SOURCE_DIR})
-message(STATUS "Subprojects found: ${projects}")
-FOREACH(subdir ${projects})
-if (NOT TARGET ${subdir})
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
-endif()
-ENDFOREACH()
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
