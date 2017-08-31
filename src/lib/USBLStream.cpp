@@ -39,13 +39,13 @@ ICommsLink& USBLStream::operator<< (const DataLinkFramePtr & dlf)
 	//Example of pbm command:
 	//+++AT*SENDPBM,10,2,1234567890
 	Write(pbmHeader.c_str(), pbmHeaderLength);
-	std::string plength = std::to_string(dlf->payloadSize);
+	std::string plength = std::to_string(dlf->GetPayloadSize());
 	Write(plength.c_str(), plength.length());
 	std::string dstdir = std::to_string(dlf->GetDesDir());
 	Write(",", 1);
 	Write(dstdir.c_str(), dstdir.length());
 	Write(",", 1);
-	Write(dlf->payload, dlf->payloadSize);
+	Write(dlf->GetPayloadBuffer(), dlf->GetPayloadSize());
 	Write("\n", 1);
 	return *this;
 }
