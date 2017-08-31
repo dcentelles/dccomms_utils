@@ -67,17 +67,24 @@ ICommsLink& S100Stream::operator<< (const DataLinkFramePtr & dlf)
         std::this_thread::sleep_for(std::chrono::milliseconds(_trunkTransmissionTime));
         ptr += _maxTrunkSize;
     }
+
+    uint8_t endOfPacket[2] = {0xd,0xa};
     unsigned long left = maxPtr - ptr;
     if(left > 0)
     {
-        _trunkTransmissionTime = ceil(left * _byteTransmissionTime);
-        Log->debug("Sending trunk of {} bytes... ({} ms)",
+        _trunkTransmissionTime = ceil((left+2) * _byteTransmissionTime);
+        Log->info("Sending trunk of {} bytes and end of packet... ({} ms)",
                    left,
                    _trunkTransmissionTime);
         Write(ptr, left);
-        std::this_thread::sleep_for(std::chrono::milliseconds(_trunkTransmissionTime));
     }
-
+    else
+    {
+        _trunkTransmissionTime = ceil(2 * _byteTransmissionTime);
+        Log->info("Sending end of packet... ({} ms)", _trunkTransmissionTime);
+    }
+    Write(endOfPacket, 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(_trunkTransmissionTime));
 
     return *this;
 }
