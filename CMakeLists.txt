@@ -114,6 +114,6 @@ install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge dccomms_usbl_bridge
         LIBRARY DESTINATION "lib"
         RUNTIME DESTINATION "bin"
         )
-install(DIRECTORY "lib/include/${PROJECT_NAME}" DESTINATION "include")
+install(DIRECTORY "src/lib/include/dccomms_utils" DESTINATION "include")
 
 message("End ${PROJECT_NAME_ORIG}")
