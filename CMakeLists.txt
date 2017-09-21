@@ -110,7 +110,7 @@ add_executable(dccomms_s100_bridge ${SRCPATH}main/dccomms_s100_bridge/dccomms_s1
 target_link_libraries(dccomms_s100_bridge ${DCCOMMS_GIT} ${PROJECT_NAME})
 
 
-install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge dccomms_usbl_bridge
+install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge dccomms_usbl_bridge dccomms_s100_bridge
         LIBRARY DESTINATION "lib"
         RUNTIME DESTINATION "bin"
         )
