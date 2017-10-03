@@ -25,12 +25,16 @@ void S100Stream::init() {
     _byteTransmissionTime = 1000. / (_maxBaudrate / 8.);
 
   _maxTrunkSize = 40;
-  Log->debug("baudrate: {} ; byte transmission time: {} ; frame trunk size: {}",
-             _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
 }
 
 int S100Stream::_Recv(void *dbuf, int n, bool block) {
   return Read((unsigned char *)dbuf, n, (unsigned int)block);
+}
+
+void S100Stream::LogConfig() {
+
+  Log->info("baudrate: {} ; byte transmission time: {} ; frame trunk size: {}",
+            _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
 }
 
 ICommsLink &S100Stream::operator<<(const DataLinkFramePtr &dlf) {
@@ -49,7 +53,7 @@ ICommsLink &S100Stream::operator<<(const DataLinkFramePtr &dlf) {
   _trunkTransmissionTime = ceil(_maxTrunkSize * _byteTransmissionTime);
 
   while (ptr + _maxTrunkSize < maxPtr) {
-    Log->debug("Sending trunk of {} bytes... ({} ms)", _maxTrunkSize,
+    Log->trace("Sending trunk of {} bytes... ({} ms)", _maxTrunkSize,
                _trunkTransmissionTime);
     Write(ptr, _maxTrunkSize);
     std::this_thread::sleep_for(
@@ -61,12 +65,12 @@ ICommsLink &S100Stream::operator<<(const DataLinkFramePtr &dlf) {
   unsigned long left = maxPtr - ptr;
   if (left > 0) {
     _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTime);
-    Log->info("Sending trunk of {} bytes and end of packet... ({} ms)", left,
-              _trunkTransmissionTime);
+    Log->trace("Sending trunk of {} bytes and end of packet... ({} ms)", left,
+               _trunkTransmissionTime);
     Write(ptr, left);
   } else {
     _trunkTransmissionTime = ceil(2 * _byteTransmissionTime);
-    Log->info("Sending end of packet... ({} ms)", _trunkTransmissionTime);
+    Log->trace("Sending end of packet... ({} ms)", _trunkTransmissionTime);
   }
   Write(endOfPacket, 2);
   std::this_thread::sleep_for(
