@@ -24,7 +24,7 @@ void S100Stream::init() {
   if (_maxBaudrate > 0)
     _byteTransmissionTime = 1000. / (_maxBaudrate / 8.);
 
-  _maxTrunkSize = 100;
+  _maxTrunkSize = 40;
   Log->debug("baudrate: {} ; byte transmission time: {} ; frame trunk size: {}",
              _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
 }
@@ -57,7 +57,7 @@ ICommsLink &S100Stream::operator<<(const DataLinkFramePtr &dlf) {
     ptr += _maxTrunkSize;
   }
 
-  uint8_t endOfPacket[2] = {0xd, 0xa};
+  uint8_t endOfPacket[2] = {0xa, 0xd};
   unsigned long left = maxPtr - ptr;
   if (left > 0) {
     _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTime);
