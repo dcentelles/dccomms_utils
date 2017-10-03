@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   comms = new EvologicsBridge(stream, baudrate, DataLinkFrame::fcsType::crc16);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetNamespace("operator");
+  comms->SetCommsDeviceId("operator");
   comms->SetLogName("OperatorBridge");
   stream->SetLogName(comms->GetLogName() + ":USBLStream");
   comms->SetEndOfCmd("\n");

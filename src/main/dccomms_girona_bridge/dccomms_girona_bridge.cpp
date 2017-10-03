@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
       new EvologicsBridge(stream, maxDataRate, DataLinkFrame::fcsType::crc16);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetNamespace("camera");
+  comms->SetCommsDeviceId("camera");
   comms->SetLogName("ROVBridge");
   stream->SetLogName(comms->GetLogName() + ":ROVStream");
   comms->SetEndOfCmd("\r");

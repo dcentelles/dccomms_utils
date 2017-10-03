@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   comms = new CommsBridge(stream, 0, DataLinkFrame::fcsType::crc16);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetNamespace(ns);
+  comms->SetCommsDeviceId(ns);
   comms->SetLogName("S100Bridge");
   stream->SetLogName(comms->GetLogName() + ":S100Stream");
 
