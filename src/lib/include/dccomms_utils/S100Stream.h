@@ -24,7 +24,7 @@ public:
              BaudRate = BaudRate::BAUD_19200, int maxBaudrate = 2400);
   virtual ~S100Stream();
 
-  virtual ICommsLink &operator<<(const DataLinkFramePtr &dlf);
+  virtual ICommsLink &operator<<(const PacketPtr &dlf);
 
   virtual void LogConfig();
 

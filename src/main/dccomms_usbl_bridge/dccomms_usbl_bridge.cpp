@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   setSignals();
 
   stream = new USBLStream(devicedir);
-  comms = new EvologicsBridge(stream, baudrate, DataLinkFrame::fcsType::crc16);
+  comms = new EvologicsBridge(stream, baudrate);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
   comms->SetCommsDeviceId("operator");

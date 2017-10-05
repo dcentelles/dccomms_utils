@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include <dccomms/DataLinkFrame.h>
 #include <dccomms_utils/GironaStream.h>
 #include <string>
 
@@ -18,6 +19,7 @@ GironaStream::GironaStream(std::string serialportname,
                "\\.\\d+)?)),(\\d+(?:\\.\\d+)?),(\\d+(?:\\.\\d+)?)(,)") {
   // TODO Auto-generated constructor stub
   init();
+  dlf = DataLinkFrame::BuildDataLinkFrame(DataLinkFrame::fcsType::crc16);
 }
 
 GironaStream::~GironaStream() {
@@ -33,7 +35,7 @@ int GironaStream::_Recv(void *dbuf, int n, bool block) {
   return Read((unsigned char *)dbuf, n, (unsigned int)block);
 }
 
-ICommsLink &GironaStream::operator>>(DataLinkFramePtr &dlf) {
+ICommsLink &GironaStream::operator>>(PacketPtr pkt) {
   bool receivedPacket = false;
 
   while (!receivedPacket) {
@@ -104,6 +106,7 @@ ICommsLink &GironaStream::operator>>(DataLinkFramePtr &dlf) {
                    integrity, velocity);
 
         dlf->UpdateFrame(dstAddr, sourceAddr, payloadLength, pbmData);
+        pkt->CopyFromRawBuffer(dlf->GetBuffer());
         receivedPacket = true;
       }
     }

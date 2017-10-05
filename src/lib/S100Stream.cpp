@@ -37,16 +37,18 @@ void S100Stream::LogConfig() {
             _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
 }
 
-ICommsLink &S100Stream::operator<<(const DataLinkFramePtr &dlf) {
-  auto buffer = dlf->GetFrameBuffer();
-  auto fs = dlf->GetFrameSize();
+ICommsLink &S100Stream::operator<<(const PacketPtr &dlf) {
+  auto buffer = dlf->GetBuffer();
+  auto fs = dlf->GetPacketSize();
 
   auto ptr = buffer;
   auto maxPtr = buffer + fs;
 
   unsigned int _frameTransmissionTime = ceil(fs * _byteTransmissionTime);
-  Log->debug("TX {}->{}: estimated frame transmission time: {} ms (FS: {}).",
-             dlf->GetSrcDir(), dlf->GetDesDir(), _frameTransmissionTime, fs);
+  //  Log->debug("TX {}->{}: estimated frame transmission time: {} ms (FS:
+  //  {}).",
+  //             dlf->GetSrcDir(), dlf->GetDesDir(), _frameTransmissionTime,
+  //             fs);
 
   unsigned int _trunkTransmissionTime;
 

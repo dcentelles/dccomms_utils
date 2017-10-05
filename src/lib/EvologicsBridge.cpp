@@ -11,10 +11,11 @@ namespace dccomms_utils {
 
 using namespace dccomms;
 
-EvologicsBridge::EvologicsBridge(ICommsDevice *_device, int _baudrate,
-                                 DataLinkFrame::fcsType chksum)
-    : CommsBridge(_device, _baudrate, chksum) {
+static PacketBuilderPtr pb =
+    std::make_shared<DataLinkFramePacketBuilder>(DataLinkFrame::fcsType::crc16);
 
+EvologicsBridge::EvologicsBridge(ICommsDevice *_device, int _baudrate)
+    : CommsBridge(_device, pb, pb, _baudrate) {
   SetEndOfCmd("\n");
   _InitCommands();
   clusterSize = 30;
@@ -105,14 +106,14 @@ void EvologicsBridge::TxWork() {
     phyService.WaitForFramesFromRxFifo();
     phyService.SetPhyLayerState(CommsDeviceService::BUSY);
     do {
-      phyService >> txdlf;
+      phyService >> txpkt;
       Log->debug("TX: FIFO size: {}", phyService.GetRxFifoSize());
 
-      if (txdlf->checkFrame()) {
+      if (txpkt->PacketIsOk()) {
         // PACKET OK
         Log->debug("TX: frame is OK, ready to send");
-        TransmitFrame();
-        unsigned int frameSize = txdlf->GetFrameSize();
+        _TransmitPacket();
+        unsigned int frameSize = txpkt->GetPacketSize();
         _frameTransmissionTime = ceil(frameSize * _byteTransmissionTime);
         Log->debug("frame transmission time: {}", _frameTransmissionTime);
         timer.Reset();

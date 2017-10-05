@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <dccomms/CommsBridge.h>
+#include <dccomms/DataLinkFrame.h>
 #include <dccomms/Utils.h>
 #include <dccomms_utils/S100Stream.h>
 #include <iostream>
@@ -54,7 +55,11 @@ int main(int argc, char **argv) {
 
   auto portBaudrate = SerialPortStream::BAUD_2400;
   stream = new S100Stream(modemPort, portBaudrate, modemBaudrate);
-  comms = new CommsBridge(stream, 0, DataLinkFrame::fcsType::crc16);
+
+  PacketBuilderPtr pb = std::make_shared<DataLinkFramePacketBuilder>(
+      DataLinkFrame::fcsType::crc16);
+
+  comms = new CommsBridge(stream, pb, pb, 0);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
   comms->SetCommsDeviceId(ns);

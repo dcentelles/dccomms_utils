@@ -6,6 +6,7 @@
  */
 
 #include <cstring>
+#include <dccomms/DataLinkFrame.h>
 #include <dccomms_utils/USBLStream.h>
 #include <sys/time.h>
 
@@ -31,7 +32,9 @@ void USBLStream::init() {
   pbmHeaderLength = pbmHeader.length();
 }
 
-ICommsLink &USBLStream::operator<<(const DataLinkFramePtr &dlf) {
+ICommsLink &USBLStream::operator<<(const PacketPtr &pkt) {
+  auto dlf = DataLinkFrame::BuildDataLinkFrame(DataLinkFrame::fcsType::crc16);
+  dlf->GetInfoFromBufferWithPreamble(pkt->GetBuffer());
   // Example of pbm command:
   //+++AT*SENDPBM,10,2,1234567890
   Write(pbmHeader.c_str(), pbmHeaderLength);

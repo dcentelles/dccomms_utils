@@ -51,8 +51,7 @@ int main(int argc, char **argv) {
   setSignals();
 
   stream = new GironaStream(serialportname, SerialPortStream::BAUD_19200);
-  comms =
-      new EvologicsBridge(stream, maxDataRate, DataLinkFrame::fcsType::crc16);
+  comms = new EvologicsBridge(stream, maxDataRate);
 
   comms->SetLogLevel(cpplogging::LogLevel::debug);
   comms->SetCommsDeviceId("camera");
