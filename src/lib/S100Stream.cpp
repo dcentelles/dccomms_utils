@@ -55,7 +55,7 @@ ICommsLink &S100Stream::operator<<(const PacketPtr &dlf) {
   _trunkTransmissionTime = ceil(_maxTrunkSize * _byteTransmissionTime);
 
   while (ptr + _maxTrunkSize < maxPtr) {
-    Log->trace("Sending trunk of {} bytes... ({} ms)", _maxTrunkSize,
+    Log->debug("Sending trunk of {} bytes... ({} ms)", _maxTrunkSize,
                _trunkTransmissionTime);
     Write(ptr, _maxTrunkSize);
     std::this_thread::sleep_for(
@@ -67,12 +67,12 @@ ICommsLink &S100Stream::operator<<(const PacketPtr &dlf) {
   unsigned long left = maxPtr - ptr;
   if (left > 0) {
     _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTime);
-    Log->trace("Sending trunk of {} bytes and end of packet... ({} ms)", left,
+    Log->debug("Sending trunk of {} bytes and end of packet... ({} ms)", left,
                _trunkTransmissionTime);
     Write(ptr, left);
   } else {
     _trunkTransmissionTime = ceil(2 * _byteTransmissionTime);
-    Log->trace("Sending end of packet... ({} ms)", _trunkTransmissionTime);
+    Log->debug("Sending end of packet... ({} ms)", _trunkTransmissionTime);
   }
   Write(endOfPacket, 2);
   std::this_thread::sleep_for(
