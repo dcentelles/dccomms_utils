@@ -19,15 +19,15 @@ using namespace std;
 using namespace dccomms;
 using namespace dccomms_utils;
 
-EvologicsBridge *comms;
+EvologicsBridge *bridge;
 USBLStream *stream;
 
 void SIGINT_handler(int sig) {
   printf("Received %d signal\nClosing device socket...\n", sig);
-  comms->Stop();
+  bridge->Stop();
   printf("Device closed.\n");
   fflush(stdout);
-  comms->FlushLog();
+  bridge->FlushLog();
   stream->FlushLog();
   Utils::Sleep(2000);
   printf("Log messages flushed.\n");
@@ -49,25 +49,25 @@ int main(int argc, char **argv) {
   setSignals();
 
   stream = new USBLStream(devicedir);
-  comms = new EvologicsBridge(stream, baudrate);
+  bridge = new EvologicsBridge(stream, baudrate);
 
-  comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetCommsDeviceId("operator");
-  comms->SetLogName("OperatorBridge");
-  stream->SetLogName(comms->GetLogName() + ":USBLStream");
-  comms->SetEndOfCmd("\n");
+  bridge->SetLogLevel(cpplogging::LogLevel::debug);
+  bridge->SetCommsDeviceId("operator");
+  bridge->SetLogName("OperatorBridge");
+  stream->SetLogName(bridge->GetLogName() + ":USBLStream");
+  bridge->SetEndOfCmd("\n");
 
-  comms->SetLocalAddr(1);
-  comms->SetRemoteAddr(3);
-  comms->SetClusterSize(atoi(argv[3]));
+  bridge->SetLocalAddr(1);
+  bridge->SetRemoteAddr(3);
+  bridge->SetClusterSize(atoi(argv[3]));
 
-  comms->FlushLogOn(cpplogging::LogLevel::info);
-  comms->LogToFile("usbl_comms_bridge_log");
+  bridge->FlushLogOn(cpplogging::LogLevel::info);
+  bridge->LogToFile("usbl_comms_bridge_log");
 
   stream->FlushLogOn(cpplogging::LogLevel::info);
   stream->LogToFile("usbl_comms_bridge_device_log");
 
-  comms->Start();
+  bridge->Start();
   while (1) {
     Utils::Sleep(1000);
   }

@@ -20,14 +20,14 @@ using namespace std;
 using namespace dccomms;
 using namespace dccomms_utils;
 
-CommsBridge *comms;
+CommsBridge *bridge;
 S100Stream *stream;
 
 void SIGINT_handler(int sig) {
   printf("Received %d signal\nClosing device socket...\n", sig);
   printf("Device closed.\n");
   fflush(stdout);
-  comms->FlushLog();
+  bridge->FlushLog();
   stream->FlushLog();
   Utils::Sleep(2000);
   printf("Log messages flushed.\n");
@@ -59,20 +59,20 @@ int main(int argc, char **argv) {
   PacketBuilderPtr pb = std::make_shared<DataLinkFramePacketBuilder>(
       DataLinkFrame::fcsType::crc16);
 
-  comms = new CommsBridge(stream, pb, pb, 0);
+  bridge = new CommsBridge(stream, pb, pb, 0);
 
-  comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetCommsDeviceId(ns);
-  comms->SetLogName("S100Bridge");
-  stream->SetLogName(comms->GetLogName() + ":S100Stream");
+  bridge->SetLogLevel(cpplogging::LogLevel::debug);
+  bridge->SetCommsDeviceId(ns);
+  bridge->SetLogName("S100Bridge");
+  stream->SetLogName(bridge->GetLogName() + ":S100Stream");
 
-  comms->FlushLogOn(cpplogging::LogLevel::info);
-  comms->LogToFile("s100_comms_bridge_log");
+  bridge->FlushLogOn(cpplogging::LogLevel::info);
+  bridge->LogToFile("s100_comms_bridge_log");
 
   stream->FlushLogOn(cpplogging::LogLevel::info);
   stream->LogToFile("s100_comms_bridge_device_log");
 
-  comms->Start();
+  bridge->Start();
   while (1) {
     Utils::Sleep(1000);
   }

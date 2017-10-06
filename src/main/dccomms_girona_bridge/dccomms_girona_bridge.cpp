@@ -19,7 +19,7 @@ using namespace std;
 using namespace dccomms;
 
 using namespace dccomms_utils;
-EvologicsBridge *comms;
+EvologicsBridge *bridge;
 GironaStream *stream;
 
 void SIGINT_handler(int sig) {
@@ -51,28 +51,28 @@ int main(int argc, char **argv) {
   setSignals();
 
   stream = new GironaStream(serialportname, SerialPortStream::BAUD_19200);
-  comms = new EvologicsBridge(stream, maxDataRate);
+  bridge = new EvologicsBridge(stream, maxDataRate);
 
-  comms->SetLogLevel(cpplogging::LogLevel::debug);
-  comms->SetCommsDeviceId("camera");
-  comms->SetLogName("ROVBridge");
-  stream->SetLogName(comms->GetLogName() + ":ROVStream");
-  comms->SetEndOfCmd("\r");
+  bridge->SetLogLevel(cpplogging::LogLevel::debug);
+  bridge->SetCommsDeviceId("camera");
+  bridge->SetLogName("ROVBridge");
+  stream->SetLogName(bridge->GetLogName() + ":ROVStream");
+  bridge->SetEndOfCmd("\r");
 
-  comms->SetLocalAddr(localAddr);   // 2
-  comms->SetRemoteAddr(remoteAddr); // 1
+  bridge->SetLocalAddr(localAddr);   // 2
+  bridge->SetRemoteAddr(remoteAddr); // 1
 
   std::cout << "Local add: " << localAddr << endl;
   std::cout << "Remote add: " << remoteAddr << endl;
-  comms->SetClusterSize(atoi(argv[3]));
+  bridge->SetClusterSize(atoi(argv[3]));
 
-  comms->FlushLogOn(cpplogging::LogLevel::info);
-  comms->LogToFile("rov_comms_bridge_log");
+  bridge->FlushLogOn(cpplogging::LogLevel::info);
+  bridge->LogToFile("rov_comms_bridge_log");
 
   stream->FlushLogOn(cpplogging::LogLevel::info);
   stream->LogToFile("rov_comms_bridge_device_log");
 
-  comms->Start();
+  bridge->Start();
   while (1) {
     Utils::Sleep(1000);
   }
