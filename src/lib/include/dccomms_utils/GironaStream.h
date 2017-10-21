@@ -25,7 +25,7 @@ public:
   GironaStream(std::string serialportname = "/dev/ttyUSB0",
                BaudRate = BaudRate::BAUD_19200);
   virtual ~GironaStream();
-  virtual ICommsLink &operator>>(PacketPtr pkt);
+  virtual void ReadPacket(const PacketPtr &pkt);
 
 private:
   void init();

@@ -37,7 +37,7 @@ void S100Stream::LogConfig() {
             _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
 }
 
-ICommsLink &S100Stream::operator<<(const PacketPtr &dlf) {
+void S100Stream::WritePacket(const PacketPtr &dlf) {
   auto buffer = dlf->GetBuffer();
   auto fs = dlf->GetPacketSize();
 
@@ -77,8 +77,6 @@ ICommsLink &S100Stream::operator<<(const PacketPtr &dlf) {
   Write(endOfPacket, 2);
   std::this_thread::sleep_for(
       std::chrono::milliseconds(_trunkTransmissionTime));
-
-  return *this;
 }
 
 } /* namespace merbots */

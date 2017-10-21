@@ -24,7 +24,7 @@ public:
   USBLStream();
   USBLStream(std::string addr);
   virtual ~USBLStream();
-  virtual ICommsLink &operator<<(const PacketPtr &dlf);
+  virtual void WritePacket(const PacketPtr &dlf);
   virtual int Read(void *, uint32_t, unsigned long msTimeout = 0);
 
 private:

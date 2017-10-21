@@ -5,8 +5,10 @@
  *      Author: centelld
  */
 
+#include <dccomms/DataLinkFrame.h>
 #include <dccomms_utils/EvologicsBridge.h>
 #include <string>
+
 namespace dccomms_utils {
 
 using namespace dccomms;
@@ -14,13 +16,14 @@ using namespace dccomms;
 static PacketBuilderPtr pb =
     std::make_shared<DataLinkFramePacketBuilder>(DataLinkFrame::fcsType::crc16);
 
-EvologicsBridge::EvologicsBridge(ICommsDevice *_device, int _baudrate)
+EvologicsBridge::EvologicsBridge(StreamCommsDevice *_device, int _baudrate)
     : CommsBridge(_device, pb, pb, _baudrate) {
   SetEndOfCmd("\n");
   _InitCommands();
   clusterSize = 30;
   remoteAddr = 0;
   localAddr = 1;
+  _streamCommsDevice = _device;
 }
 
 EvologicsBridge::~EvologicsBridge() {
@@ -51,30 +54,33 @@ void EvologicsBridge::_SendInitCommands() {
   std::string strClusterSize = ATZC + std::to_string(clusterSize) + endOfCmd;
   std::string strLocalAddr = ATALX + std::to_string(localAddr) + endOfCmd;
   std::string strRemoteAddr = std::to_string(remoteAddr) + endOfCmd;
-  *device << AT0 << endOfCmd   // Ensure data mode
-          << ATRP0 << endOfCmd // Disable promiscous mode
-          << ATZU0
-          << endOfCmd // Disable USBLLONG (will take effect only in USBL modem
-          << ATZX0 << endOfCmd // Disable extended notifications
-          << ATZC + std::to_string(clusterSize)
-          << endOfCmd // Set cluster size (packets per packet train)
-          << ATALX + std::to_string(localAddr) << endOfCmd; // Set local address
+  *_streamCommsDevice
+      << AT0 << endOfCmd   // Ensure data mode
+      << ATRP0 << endOfCmd // Disable promiscous mode
+      << ATZU0
+      << endOfCmd // Disable USBLLONG (will take effect only in USBL modem
+      << ATZX0 << endOfCmd // Disable extended notifications
+      << ATZC + std::to_string(clusterSize)
+      << endOfCmd // Set cluster size (packets per packet train)
+      << ATALX + std::to_string(localAddr) << endOfCmd; // Set local address
 
   Utils::Sleep(2000);
   ClearTransmissionBuffer();
   Utils::Sleep(2000);
-  *device << ATARX + std::to_string(remoteAddr)
-          << endOfCmd          // Set remote address
-          << ATKO0 << endOfCmd // Keep online the acoustic connection
-          << ATD << endOfCmd   // Establish a connection
-          << "+++AT!RI0" << endOfCmd << "+++AT!DW0" << endOfCmd
-          << "+++AT@ZL8096" << endOfCmd;
+  *_streamCommsDevice << ATARX + std::to_string(remoteAddr)
+                      << endOfCmd // Set remote address
+                      << ATKO0
+                      << endOfCmd        // Keep online the acoustic connection
+                      << ATD << endOfCmd // Establish a connection
+                      << "+++AT!RI0" << endOfCmd << "+++AT!DW0" << endOfCmd
+                      << "+++AT@ZL8096" << endOfCmd;
 
   Utils::Sleep(3000);
 
-  *device << "+++AT?RP" << endOfCmd << "+++AT?ZU" << endOfCmd << "+++AT?ZX"
-          << endOfCmd << "+++AT?ZC" << endOfCmd << "+++AT?AL" << endOfCmd
-          << "+++AT?AR" << endOfCmd << "+++AT?KO" << endOfCmd;
+  *_streamCommsDevice << "+++AT?RP" << endOfCmd << "+++AT?ZU" << endOfCmd
+                      << "+++AT?ZX" << endOfCmd << "+++AT?ZC" << endOfCmd
+                      << "+++AT?AL" << endOfCmd << "+++AT?AR" << endOfCmd
+                      << "+++AT?KO" << endOfCmd;
 
   Utils::Sleep(2000);
 
@@ -97,7 +103,7 @@ void EvologicsBridge::_InitCommands() {
 void EvologicsBridge::ClearTransmissionBuffer() {
 
   Log->warn("TX: clearing transmission buffer...");
-  *device << ATZ4 << endOfCmd;
+  *_streamCommsDevice << ATZ4 << endOfCmd;
 }
 
 void EvologicsBridge::TxWork() {

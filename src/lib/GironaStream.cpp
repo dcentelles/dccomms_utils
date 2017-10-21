@@ -35,7 +35,7 @@ int GironaStream::_Recv(void *dbuf, int n, bool block) {
   return Read((unsigned char *)dbuf, n, (unsigned int)block);
 }
 
-ICommsLink &GironaStream::operator>>(PacketPtr pkt) {
+void GironaStream::ReadPacket(const PacketPtr &pkt) {
   bool receivedPacket = false;
 
   while (!receivedPacket) {
@@ -115,8 +115,6 @@ ICommsLink &GironaStream::operator>>(PacketPtr pkt) {
     Log->info("Received notification from modem: {}", notificationStr);
     notificationReceivedCallback(notificationStr);
   }
-
-  return *this;
 }
 
 } /* namespace merbots */

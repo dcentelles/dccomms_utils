@@ -9,7 +9,7 @@
 #define INCLUDE_MERBOTS_EVOLOGICSBRIDGE_H_
 
 #include <dccomms/CommsBridge.h>
-#include <dccomms/DataLinkFrame.h>
+#include <dccomms/StreamCommsDevice.h>
 #include <mutex>
 namespace dccomms_utils {
 
@@ -17,7 +17,7 @@ using namespace dccomms;
 
 class EvologicsBridge : public CommsBridge {
 public:
-  EvologicsBridge(ICommsDevice *, int _baudrate = 0);
+  EvologicsBridge(StreamCommsDevice *, int _baudrate = 0);
   virtual ~EvologicsBridge();
 
   void SetRemoteAddr(int);
@@ -33,6 +33,7 @@ private:
   bool TryToConnect();
   void _InitCommands();
   void _SendInitCommands();
+  StreamCommsDevice *_streamCommsDevice;
   std::string endOfCmd, // End of command
       ATZ4,             // Clear transmission buffer
       AT0,              // Ensure data mode

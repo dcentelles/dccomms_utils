@@ -32,7 +32,7 @@ void USBLStream::init() {
   pbmHeaderLength = pbmHeader.length();
 }
 
-ICommsLink &USBLStream::operator<<(const PacketPtr &pkt) {
+void USBLStream::WritePacket(const PacketPtr &pkt) {
   auto dlf = DataLinkFrame::BuildDataLinkFrame(DataLinkFrame::fcsType::crc16);
   dlf->GetInfoFromBufferWithPreamble(pkt->GetBuffer());
   // Example of pbm command:
@@ -46,7 +46,6 @@ ICommsLink &USBLStream::operator<<(const PacketPtr &pkt) {
   Write(",", 1);
   Write(dlf->GetPayloadBuffer(), dlf->GetPayloadSize());
   Write("\n", 1);
-  return *this;
 }
 
 int USBLStream::_Recv(void *dbuf, int n, bool block) {
