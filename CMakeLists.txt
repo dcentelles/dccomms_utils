@@ -100,17 +100,17 @@ add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_CPP_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${DCCOMMS_GIT} ${catkin_LIBRARIES})
 
-add_executable(dccomms_girona_bridge ${SRCPATH}main/dccomms_girona_bridge/dccomms_girona_bridge.cpp)
-target_link_libraries(dccomms_girona_bridge ${DCCOMMS_GIT} ${PROJECT_NAME})
+add_executable(dccomms_girona_bridge_${_build_version} ${SRCPATH}main/dccomms_girona_bridge/dccomms_girona_bridge.cpp)
+target_link_libraries(dccomms_girona_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
 
-add_executable(dccomms_usbl_bridge ${SRCPATH}main/dccomms_usbl_bridge/dccomms_usbl_bridge.cpp)
-target_link_libraries(dccomms_usbl_bridge ${DCCOMMS_GIT} ${PROJECT_NAME})
+add_executable(dccomms_usbl_bridge_${_build_version} ${SRCPATH}main/dccomms_usbl_bridge/dccomms_usbl_bridge.cpp)
+target_link_libraries(dccomms_usbl_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
 
-add_executable(dccomms_s100_bridge ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
-target_link_libraries(dccomms_s100_bridge ${DCCOMMS_GIT} ${PROJECT_NAME})
+add_executable(dccomms_s100_bridge_${_build_version} ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
+target_link_libraries(dccomms_s100_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
 
 
-install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge dccomms_usbl_bridge dccomms_s100_bridge
+install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge_${_build_version} dccomms_usbl_bridge_${_build_version} dccomms_s100_bridge_${_build_version}
         LIBRARY DESTINATION "lib"
         RUNTIME DESTINATION "bin"
         )
