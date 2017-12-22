@@ -82,7 +82,10 @@ add_definitions(-std=c++11)
 
 ######
 SET(SRCPATH src/)
-SET(${PROJECT_NAME}_INCLUDE_DIRS "${SRCPATH}lib/include")
+SET(${PROJECT_NAME}_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/${SRCPATH}lib/include
+    ${${DCCOMMS_GIT}_INCLUDE_DIRS}
+    )
 SET(${PROJECT_NAME}_CPP_FILES
                         ${SRCPATH}lib/USBLStream.cpp
                         ${SRCPATH}lib/GironaStream.cpp
@@ -115,5 +118,6 @@ install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge_${_build_version} dccomms_
         RUNTIME DESTINATION "bin"
         )
 install(DIRECTORY "src/lib/include/dccomms_utils" DESTINATION "include")
-
+SET(${PROJECT_NAME}_INCLUDE_DIRS ${${PROJECT_NAME}_INCLUDE_DIRS} PARENT_SCOPE)
+SET(${PROJECT_NAME}_LIBRARIES ${PROJECT_NAME} ${${DCCOMMS_GIT}_LIBRARIES} PARENT_SCOPE)
 message("End ${PROJECT_NAME_ORIG}")
