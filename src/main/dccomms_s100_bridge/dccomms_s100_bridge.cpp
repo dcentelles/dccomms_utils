@@ -53,12 +53,15 @@ int main(int argc, char **argv) {
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
-    options.add_options()
-        ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
-        ("l,log-level", "log level: critical,debug,err,info,off,trace,warn",cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("b, modem-bitrate", "maximum bitrate", cxxopts::value<uint32_t>(modemBitrate))
-        ("help", "Print help")
-        ("dccomms-id", "dccomms id for bridge",cxxopts::value<std::string>(dccommsId)->default_value("s100"));
+    options.add_options()(
+        "p,modem-port", "Modem's serial port",
+        cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))(
+        "l,log-level", "log level: critical,debug,err,info,off,trace,warn",
+        cxxopts::value<std::string>(logLevelStr)->default_value("info"))(
+        "b, modem-bitrate", "maximum bitrate",
+        cxxopts::value<uint32_t>(modemBitrate))("help", "Print help")(
+        "dccomms-id", "dccomms id for bridge",
+        cxxopts::value<std::string>(dccommsId)->default_value("s100"));
 
     auto result = options.parse(argc, argv);
     if (result.count("help")) {
@@ -71,7 +74,8 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  Log->Info("dccommsId: {} ; port: {} ; bit-rate: {}", dccommsId, modemPort, modemBitrate);
+  Log->Info("dccommsId: {} ; port: {} ; bit-rate: {}", dccommsId, modemPort,
+            modemBitrate);
   setSignals();
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
   auto portBaudrate = SerialPortStream::BAUD_2400;
@@ -86,12 +90,23 @@ int main(int argc, char **argv) {
   bridge->SetCommsDeviceId(dccommsId);
   bridge->SetLogName("S100Bridge");
   stream->SetLogName(bridge->GetLogName() + ":S100Stream");
+  stream->SetLogLevel(info);
 
   bridge->FlushLogOn(info);
   bridge->LogToFile("s100_comms_bridge_log");
 
   stream->FlushLogOn(info);
   stream->LogToFile("s100_comms_bridge_device_log");
+
+  bridge->SetReceivedPacketWithoutErrorsCb([](PacketPtr pkt) {
+    Log->Info("Received packet of {} bytes", pkt->GetPacketSize());
+  });
+  bridge->SetReceivedPacketWithErrorsCb([](PacketPtr pkt) {
+    Log->Warn("Received packet with errors ({} bytes)", pkt->GetPacketSize());
+  });
+  bridge->SetTransmitingPacketCb([](PacketPtr pkt) {
+    Log->Info("Transmitting packet of {} bytes", pkt->GetPacketSize());
+  });
 
   bridge->Start();
   while (1) {
