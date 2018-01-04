@@ -110,7 +110,7 @@ add_executable(dccomms_usbl_bridge_${_build_version} ${SRCPATH}main/dccomms_usbl
 target_link_libraries(dccomms_usbl_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
 
 add_executable(dccomms_s100_bridge_${_build_version} ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
-target_link_libraries(dccomms_s100_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
+target_link_libraries(dccomms_s100_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME} cxxopts)
 
 
 install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge_${_build_version} dccomms_usbl_bridge_${_build_version} dccomms_s100_bridge_${_build_version}

@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include <cstdio>
+#include <cxxopts.hpp>
 #include <signal.h>
 #include <sys/types.h>
 
@@ -20,6 +21,7 @@ using namespace std;
 using namespace dccomms;
 using namespace dccomms_utils;
 
+LoggerPtr Log = cpplogging::CreateLogger("s100bridge");
 CommsBridge *bridge;
 S100Stream *stream;
 
@@ -44,32 +46,51 @@ void setSignals() {
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  int modemBaudrate;
-  std::string ns;
+  uint32_t modemBitrate = 600;
+  std::string dccommsId;
+  std::string logLevelStr;
+  Log->Info("S100 Bridge");
+  try {
+    cxxopts::Options options("dccomms_utils/s100_bridge",
+                             " - command line options");
+    options.add_options()
+        ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
+        ("l,log-level", "log level: critical,debug,err,info,off,trace,warn",cxxopts::value<std::string>(logLevelStr)->default_value("info"))
+        ("b, modem-bitrate", "maximum bitrate", cxxopts::value<uint32_t>(modemBitrate))
+        ("help", "Print help")
+        ("dccomms-id", "dccomms id for bridge",cxxopts::value<std::string>(dccommsId)->default_value("s100"));
 
-  modemBaudrate = atoi(argv[1]);
-  modemPort = argv[2];
-  ns = argv[3];
+    auto result = options.parse(argc, argv);
+    if (result.count("help")) {
+      std::cout << options.help({""}) << std::endl;
+      exit(0);
+    }
 
+  } catch (const cxxopts::OptionException &e) {
+    std::cout << "error parsing options: " << e.what() << std::endl;
+    exit(1);
+  }
+
+  Log->Info("dccommsId: {} ; port: {} ; bit-rate: {}", dccommsId, modemPort, modemBitrate);
   setSignals();
-
+  LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
   auto portBaudrate = SerialPortStream::BAUD_2400;
-  stream = new S100Stream(modemPort, portBaudrate, modemBaudrate);
+  stream = new S100Stream(modemPort, portBaudrate, modemBitrate);
 
   PacketBuilderPtr pb = std::make_shared<DataLinkFramePacketBuilder>(
       DataLinkFrame::fcsType::crc16);
 
   bridge = new CommsBridge(stream, pb, pb, 0);
 
-  bridge->SetLogLevel(cpplogging::LogLevel::debug);
-  bridge->SetCommsDeviceId(ns);
+  bridge->SetLogLevel(logLevel);
+  bridge->SetCommsDeviceId(dccommsId);
   bridge->SetLogName("S100Bridge");
   stream->SetLogName(bridge->GetLogName() + ":S100Stream");
 
-  bridge->FlushLogOn(cpplogging::LogLevel::info);
+  bridge->FlushLogOn(info);
   bridge->LogToFile("s100_comms_bridge_log");
 
-  stream->FlushLogOn(cpplogging::LogLevel::info);
+  stream->FlushLogOn(info);
   stream->LogToFile("s100_comms_bridge_device_log");
 
   bridge->Start();
