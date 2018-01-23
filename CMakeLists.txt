@@ -84,7 +84,7 @@ add_definitions(-std=c++11)
 SET(SRCPATH src/)
 SET(${PROJECT_NAME}_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/${SRCPATH}lib/include
-    ${${DCCOMMS_GIT}_INCLUDE_DIRS}
+    ${${DCCOMMS_PACKETS_GIT}_INCLUDE_DIRS}
     )
 SET(${PROJECT_NAME}_CPP_FILES
                         ${SRCPATH}lib/USBLStream.cpp
@@ -97,21 +97,23 @@ SET(${PROJECT_NAME}_CPP_FILES
 SET(${PROJECT_NAME}_CXX_COMPILE_FLAGS "-fPIC -std=c++0x")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${PROJECT_NAME}_CXX_COMPILE_FLAGS}")
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${PROJECT_NAME}_INCLUDE_DIRS)
 
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_CPP_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${DCCOMMS_GIT} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${DCCOMMS_PACKETS_GIT} ${catkin_LIBRARIES})
 
 add_executable(dccomms_girona_bridge_${_build_version} ${SRCPATH}main/dccomms_girona_bridge/dccomms_girona_bridge.cpp)
-target_link_libraries(dccomms_girona_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
+target_link_libraries(dccomms_girona_bridge_${_build_version} ${DCCOMMS_PACKETS_GIT} ${PROJECT_NAME})
 
 add_executable(dccomms_usbl_bridge_${_build_version} ${SRCPATH}main/dccomms_usbl_bridge/dccomms_usbl_bridge.cpp)
-target_link_libraries(dccomms_usbl_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME})
+target_link_libraries(dccomms_usbl_bridge_${_build_version} ${DCCOMMS_PACKETS_GIT} ${PROJECT_NAME})
 
 add_executable(dccomms_s100_bridge_${_build_version} ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
-target_link_libraries(dccomms_s100_bridge_${_build_version} ${DCCOMMS_GIT} ${PROJECT_NAME} cxxopts)
+target_link_libraries(dccomms_s100_bridge_${_build_version} ${DCCOMMS_PACKETS_GIT} ${PROJECT_NAME} cxxopts)
 
+add_executable(dccomms_s100_bridge_SimplePacket_${_build_version} ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge_SimplePacket.cpp)
+target_link_libraries(dccomms_s100_bridge_SimplePacket_${_build_version} ${DCCOMMS_PACKETS_GIT} ${PROJECT_NAME} cxxopts)
 
 install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge_${_build_version} dccomms_usbl_bridge_${_build_version} dccomms_s100_bridge_${_build_version}
         LIBRARY DESTINATION "lib"
@@ -119,5 +121,5 @@ install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge_${_build_version} dccomms_
         )
 install(DIRECTORY "src/lib/include/dccomms_utils" DESTINATION "include")
 SET(${PROJECT_NAME}_INCLUDE_DIRS ${${PROJECT_NAME}_INCLUDE_DIRS} PARENT_SCOPE)
-SET(${PROJECT_NAME}_LIBRARIES ${PROJECT_NAME} ${${DCCOMMS_GIT}_LIBRARIES} PARENT_SCOPE)
+SET(${PROJECT_NAME}_LIBRARIES ${PROJECT_NAME} ${${DCCOMMS_PACKETS_GIT}_LIBRARIES} PARENT_SCOPE)
 message("End ${PROJECT_NAME_ORIG}")
