@@ -84,6 +84,7 @@ int main(int argc, char **argv) {
   PacketBuilderPtr txpb = CreateObject<SimplePacketBuilder>(0, FCS::CRC16);
   auto emptyPacket = txpb->Create();
   auto emptyPacketSize = emptyPacket->GetPacketSize();
+
   auto payloadSize = txPacketSize - emptyPacketSize;
   txpb = CreateObject<SimplePacketBuilder>(payloadSize, FCS::CRC16);
   auto testPacket = txpb->Create();
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
   testPacket = rxpb->Create();
   Log->Info("Receiving packet size: {}", testPacket->GetPacketSize());
 
-  bridge = new CommsBridge(stream, txpb, txpb, 0);
+  bridge = new CommsBridge(stream, txpb, rxpb, 0);
 
   bridge->SetLogLevel(logLevel);
   bridge->SetCommsDeviceId(dccommsId);
