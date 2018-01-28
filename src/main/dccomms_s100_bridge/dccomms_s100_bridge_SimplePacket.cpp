@@ -51,17 +51,23 @@ int main(int argc, char **argv) {
   std::string dccommsId;
   std::string logLevelStr;
   Log->Info("S100 Bridge");
+  Log->LogToFile("s100_comms_main_log");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
     options.add_options()(
-        "p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
-        ("l,log-level", "log level: critical,debug,err,info,off,trace,warn",cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("b, modem-bitrate", "maximum bitrate",cxxopts::value<uint32_t>(modemBitrate))
-        ("help", "Print help")
-        ("dccomms-id", "dccomms id for bridge",cxxopts::value<std::string>(dccommsId)->default_value("s100"))
-        ("tx-packet-size", "transmitted SimplePacket size in bytes",cxxopts::value<uint32_t>(txPacketSize))
-        ("rx-packet-size", "received SimplePacket size in bytes",cxxopts::value<uint32_t>(rxPacketSize));
+        "p,modem-port", "Modem's serial port",
+        cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))(
+        "l,log-level", "log level: critical,debug,err,info,off,trace,warn",
+        cxxopts::value<std::string>(logLevelStr)->default_value("info"))(
+        "b, modem-bitrate", "maximum bitrate",
+        cxxopts::value<uint32_t>(modemBitrate))("help", "Print help")(
+        "dccomms-id", "dccomms id for bridge",
+        cxxopts::value<std::string>(dccommsId)->default_value("s100"))(
+        "tx-packet-size", "transmitted SimplePacket size in bytes",
+        cxxopts::value<uint32_t>(txPacketSize))(
+        "rx-packet-size", "received SimplePacket size in bytes",
+        cxxopts::value<uint32_t>(rxPacketSize));
 
     auto result = options.parse(argc, argv);
     if (result.count("help")) {

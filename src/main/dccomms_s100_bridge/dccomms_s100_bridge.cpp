@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
   std::string dccommsId;
   std::string logLevelStr;
   Log->Info("S100 Bridge");
+  Log->LogToFile("s100_comms_main_log");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
