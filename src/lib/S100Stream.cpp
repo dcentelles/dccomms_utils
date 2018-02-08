@@ -24,7 +24,7 @@ void S100Stream::init() {
   if (_maxBaudrate > 0)
     _byteTransmissionTime = 1000. / (_maxBaudrate / 8.);
 
-  _maxTrunkSize = 40;
+  _maxTrunkSize = 64;
 }
 
 int S100Stream::_Recv(void *dbuf, int n, bool block) {
@@ -63,7 +63,7 @@ void S100Stream::WritePacket(const PacketPtr &dlf) {
     ptr += _maxTrunkSize;
   }
 
-  uint8_t endOfPacket[2] = {0xa, 0xd};
+  uint8_t endOfPacket[2] = {0xd, 0xa};
   unsigned long left = maxPtr - ptr;
   if (left > 0) {
     _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTime);
