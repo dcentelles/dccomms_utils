@@ -35,7 +35,7 @@ private:
   char *notificationPayload;
   char notification[MAX_NOTIFICATION_LENGTH];
   int _maxBaudrate;
-  double _byteTransmissionTime;
+  uint64_t _byteTransmissionTimeNanos;
   int _maxTrunkSize;
 };
 

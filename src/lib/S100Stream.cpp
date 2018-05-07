@@ -20,11 +20,19 @@ S100Stream::S100Stream(std::string serialportname,
 
 S100Stream::~S100Stream() {}
 
+/*
+Email from Nautilus Oceanica (WFS distributor):
+Hola Diego:
+Cuando los paquetes son <45bytes, el Seatooth S100 espera un tiempo a menos que reciba <CR> <LF> para confirmar el final del paquete.
+Si usáis control de flujo (handshake de hardware) entre PC y S100 no hay límite para el tamaño del paquete, pero debe terminar con un <CR> <LF> (retorno de carro y avance de línea - 0x0D y 0x0A, respectivamente en hexadecimal). Se recomienda el uso de control de flujo (handshake de hardware)
+Si no usáis control de flujo, el tamaño máximo del paquete debe ser 45 y debe incluir <CR> <LF>
+Un saludo
+*/
 void S100Stream::init() {
   if (_maxBaudrate > 0)
-    _byteTransmissionTime = 1000. / (_maxBaudrate / 8.);
+    _byteTransmissionTimeNanos = 1e9 / (_maxBaudrate / 8.);
 
-  _maxTrunkSize = 64;
+  _maxTrunkSize = 45;
 }
 
 int S100Stream::_Recv(void *dbuf, int n, bool block) {
@@ -34,7 +42,7 @@ int S100Stream::_Recv(void *dbuf, int n, bool block) {
 void S100Stream::LogConfig() {
 
   Log->info("baudrate: {} ; byte transmission time: {} ; frame trunk size: {}",
-            _maxBaudrate, _byteTransmissionTime, _maxTrunkSize);
+            _maxBaudrate, _byteTransmissionTimeNanos, _maxTrunkSize);
 }
 
 void S100Stream::WritePacket(const PacketPtr &dlf) {
@@ -44,7 +52,7 @@ void S100Stream::WritePacket(const PacketPtr &dlf) {
   auto ptr = buffer;
   auto maxPtr = buffer + fs;
 
-  unsigned int _frameTransmissionTime = ceil(fs * _byteTransmissionTime);
+  unsigned int _frameTransmissionTime = ceil(fs * _byteTransmissionTimeNanos);
   //  Log->debug("TX {}->{}: estimated frame transmission time: {} ms (FS:
   //  {}).",
   //             dlf->GetSrcDir(), dlf->GetDesDir(), _frameTransmissionTime,
@@ -52,31 +60,31 @@ void S100Stream::WritePacket(const PacketPtr &dlf) {
 
   unsigned int _trunkTransmissionTime;
 
-  _trunkTransmissionTime = ceil(_maxTrunkSize * _byteTransmissionTime);
+  _trunkTransmissionTime = ceil(_maxTrunkSize * _byteTransmissionTimeNanos);
 
   while (ptr + _maxTrunkSize < maxPtr) {
     Log->debug("Sending trunk of {} bytes... ({} ms)", _maxTrunkSize,
                _trunkTransmissionTime);
     Write(ptr, _maxTrunkSize);
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(_trunkTransmissionTime));
+        std::chrono::nanoseconds(_trunkTransmissionTime));
     ptr += _maxTrunkSize;
   }
 
   uint8_t endOfPacket[2] = {0xd, 0xa};
   unsigned long left = maxPtr - ptr;
   if (left > 0) {
-    _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTime);
+    _trunkTransmissionTime = ceil((left + 2) * _byteTransmissionTimeNanos);
     Log->debug("Sending trunk of {} bytes and end of packet... ({} ms)", left,
                _trunkTransmissionTime);
     Write(ptr, left);
   } else {
-    _trunkTransmissionTime = ceil(2 * _byteTransmissionTime);
+    _trunkTransmissionTime = ceil(2 * _byteTransmissionTimeNanos);
     Log->debug("Sending end of packet... ({} ms)", _trunkTransmissionTime);
   }
   Write(endOfPacket, 2);
   std::this_thread::sleep_for(
-      std::chrono::milliseconds(_trunkTransmissionTime));
+      std::chrono::nanoseconds(_trunkTransmissionTime));
 }
 
 } /* namespace merbots */
