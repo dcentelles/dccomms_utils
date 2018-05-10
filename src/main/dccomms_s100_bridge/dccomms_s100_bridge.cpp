@@ -48,13 +48,15 @@ int main(int argc, char **argv) {
   std::string modemPort;
   uint32_t modemBitrate = 600;
   std::string dccommsId;
-  std::string logLevelStr;
+  std::string logLevelStr, logFile;
   Log->Info("S100 Bridge");
-  Log->LogToFile("s100_comms_main_log");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
     options.add_options()(
+        "f,log-file", "File to save the log",
+        cxxopts::value<std::string>(logFile)->default_value("")->implicit_value(
+            "example2_log"))(
         "p,modem-port", "Modem's serial port",
         cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))(
         "l,log-level", "log level: critical,debug,err,info,off,trace,warn",
@@ -93,20 +95,28 @@ int main(int argc, char **argv) {
   stream->SetLogName(bridge->GetLogName() + ":S100Stream");
   stream->SetLogLevel(info);
 
-  bridge->FlushLogOn(info);
-  bridge->LogToFile("s100_comms_bridge_log");
+  auto logFormatter = std::make_shared<spdlog::pattern_formatter>("[%T.%F] %v");
+  stream->SetLogFormatter(logFormatter);
+  bridge->SetLogFormatter(logFormatter);
+  Log->SetLogFormatter(logFormatter);
 
+  if (logFile != "") {
+    Log->LogToFile(logFile);
+    stream->LogToFile(logFile + "_stream");
+    bridge->LogToFile(logFile + "_bridge");
+  }
+  bridge->FlushLogOn(info);
   stream->FlushLogOn(info);
-  stream->LogToFile("s100_comms_bridge_device_log");
+  Log->FlushLogOn(info);
 
   bridge->SetReceivedPacketWithoutErrorsCb([](PacketPtr pkt) {
-    Log->Info("Received packet of {} bytes", pkt->GetPacketSize());
+    Log->Info("RX {} bytes", pkt->GetPacketSize());
   });
   bridge->SetReceivedPacketWithErrorsCb([](PacketPtr pkt) {
-    Log->Warn("Received packet with errors ({} bytes)", pkt->GetPacketSize());
+    Log->Warn("ERR {} bytes", pkt->GetPacketSize());
   });
   bridge->SetTransmitingPacketCb([](PacketPtr pkt) {
-    Log->Info("Transmitting packet of {} bytes", pkt->GetPacketSize());
+    Log->Info("TX {} bytes", pkt->GetPacketSize());
   });
 
   bridge->Start();
