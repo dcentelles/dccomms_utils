@@ -1,10 +1,4 @@
-/*
- * main.cpp
- *
- *  Created on: 22 oct. 2016
- *      Author: Diego Centelles Beltran
- */
-
+#include <cpputils/SignalManager.h>
 #include <cstdio>
 #include <dccomms/CommsBridge.h>
 #include <dccomms/Utils.h>
@@ -14,63 +8,39 @@
 
 #include <cstdio>
 #include <cxxopts.hpp>
-#include <signal.h>
 #include <sys/types.h>
 
 using namespace std;
 using namespace dccomms;
 using namespace dccomms_packets;
 using namespace dccomms_utils;
+using namespace cpputils;
 
 LoggerPtr Log = cpplogging::CreateLogger("s100bridge");
 CommsBridge *bridge;
 S100Stream *stream;
-
-void SIGINT_handler(int sig) {
-  printf("Received %d signal\nClosing device socket...\n", sig);
-  printf("Device closed.\n");
-  fflush(stdout);
-  bridge->FlushLog();
-  stream->FlushLog();
-  Log->FlushLog();
-  Utils::Sleep(2000);
-  printf("Log messages flushed.\n");
-
-  exit(0);
-}
-
-void setSignals() {
-  if (signal(SIGINT, SIGINT_handler) == SIG_ERR) {
-    printf("SIGINT install error\n");
-    exit(1);
-  }
-}
 
 int main(int argc, char **argv) {
   std::string modemPort;
   uint32_t modemBitrate = 115200, txPacketSize = 20, rxPacketSize = 20;
   std::string dccommsId;
   std::string logLevelStr, logFile;
+  bool flush = false, asyncLog = true;
   Log->Info("S100 Bridge");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
-    options.add_options()(
-        "f,log-file", "File to save the log",
-        cxxopts::value<std::string>(logFile)->default_value("")->implicit_value(
-            "example2_log"))(
-        "p,modem-port", "Modem's serial port",
-        cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))(
-        "l,log-level", "log level: critical,debug,err,info,off,trace,warn",
-        cxxopts::value<std::string>(logLevelStr)->default_value("info"))(
-        "b, modem-bitrate", "maximum bitrate",
-        cxxopts::value<uint32_t>(modemBitrate))("help", "Print help")(
-        "dccomms-id", "dccomms id for bridge",
-        cxxopts::value<std::string>(dccommsId)->default_value("s100"))(
-        "tx-packet-size", "transmitted SimplePacket size in bytes",
-        cxxopts::value<uint32_t>(txPacketSize))(
-        "rx-packet-size", "received SimplePacket size in bytes",
-        cxxopts::value<uint32_t>(rxPacketSize));
+    options.add_options()
+        ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
+        ("a,async-log", "async-log", cxxopts::value<bool>(asyncLog))
+        ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
+        ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
+        ("l,log-level", "log level: critical,debug,err,info,off,trace,warn", cxxopts::value<std::string>(logLevelStr)->default_value("info"))
+        ("b, modem-bitrate", "maximum bitrate", cxxopts::value<uint32_t>(modemBitrate))
+        ("help", "Print help")
+        ("dccomms-id", "dccomms id for bridge", cxxopts::value<std::string>(dccommsId)->default_value("s100"))
+        ("tx-packet-size", "transmitted SimplePacket size in bytes", cxxopts::value<uint32_t>(txPacketSize))
+        ("rx-packet-size", "received SimplePacket size in bytes", cxxopts::value<uint32_t>(rxPacketSize));
 
     auto result = options.parse(argc, argv);
     if (result.count("help")) {
@@ -85,7 +55,7 @@ int main(int argc, char **argv) {
 
   Log->Info("dccommsId: {} ; port: {} ; bit-rate: {}", dccommsId, modemPort,
             modemBitrate);
-  setSignals();
+
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
   auto portBaudrate = SerialPortStream::BAUD_2400;
   stream = new S100Stream(modemPort, portBaudrate, modemBitrate);
@@ -122,6 +92,14 @@ int main(int argc, char **argv) {
     stream->LogToFile(logFile + "_stream");
     bridge->LogToFile(logFile + "_bridge");
   }
+  if (flush) {
+    Log->FlushLogOn(info);
+    Log->Info("Flush log on info");
+  }
+  if (asyncLog) {
+    Log->SetAsyncMode();
+    Log->Info("Async. log");
+  }
 
   bridge->SetReceivedPacketWithoutErrorsCb(
       [](PacketPtr pkt) { Log->Info("RX {} bytes", pkt->GetPacketSize()); });
@@ -129,6 +107,20 @@ int main(int argc, char **argv) {
       [](PacketPtr pkt) { Log->Warn("ERR {} bytes", pkt->GetPacketSize()); });
   bridge->SetTransmitingPacketCb(
       [](PacketPtr pkt) { Log->Info("TX {} bytes", pkt->GetPacketSize()); });
+
+  SignalManager::SetLastCallback(SIGINT, [&](int sig) {
+    printf("Received %d signal\nClosing device socket...\n", sig);
+    bridge->Stop();
+    printf("Device closed.\n");
+    fflush(stdout);
+    bridge->FlushLog();
+    stream->FlushLog();
+    Log->FlushLog();
+    Utils::Sleep(2000);
+    printf("Log messages flushed.\n");
+
+    exit(0);
+  });
 
   bridge->Start();
   while (1) {

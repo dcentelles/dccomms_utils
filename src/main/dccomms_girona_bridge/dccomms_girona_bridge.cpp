@@ -1,46 +1,21 @@
-/*
- * main.cpp
- *
- *  Created on: 22 oct. 2016
- *      Author: Diego Centelles Beltran
- */
-
 #include <cstdio>
 #include <dccomms/Utils.h>
 #include <dccomms_utils/EvologicsBridge.h>
 #include <dccomms_utils/GironaStream.h>
 #include <iostream>
+#include <cpputils/SignalManager.h>
 
 #include <cstdio>
-#include <signal.h>
 #include <sys/types.h>
 
 using namespace std;
 using namespace dccomms;
 
 using namespace dccomms_utils;
+using namespace cpputils;
+
 EvologicsBridge *bridge;
 GironaStream *stream;
-
-void SIGINT_handler(int sig) {
-  printf("Received %d signal\nClosing device...\n", sig);
-  // comms->Stop();
-  printf("Device closed.\n");
-  fflush(stdout);
-  bridge->FlushLog();
-  stream->FlushLog();
-  Utils::Sleep(2000);
-  printf("Log messages flushed.\n");
-
-  exit(0);
-}
-
-void setSignals() {
-  if (signal(SIGINT, SIGINT_handler) == SIG_ERR) {
-    printf("SIGINT install error\n");
-    exit(1);
-  }
-}
 
 int main(int argc, char **argv) {
   int maxDataRate = std::stoi(argv[1]);
@@ -48,10 +23,21 @@ int main(int argc, char **argv) {
   int localAddr = std::stoi(argv[3]);
   int remoteAddr = std::stoi(argv[4]);
 
-  setSignals();
-
   stream = new GironaStream(serialportname, SerialPortStream::BAUD_19200);
   bridge = new EvologicsBridge(stream, maxDataRate);
+
+  SignalManager::SetLastCallback(SIGINT, [&](int signal)
+  {
+      printf("Received signal %d.\nClosing device...\n", signal);
+      bridge->FlushLog();
+      printf("Device closed.\n");
+      fflush(stdout);
+      bridge->FlushLog();
+      stream->FlushLog();
+      Utils::Sleep(2000);
+      printf("Log messages flushed.\n");
+      exit(0);
+    });
 
   bridge->SetLogLevel(cpplogging::LogLevel::debug);
   bridge->SetCommsDeviceId("camera");
