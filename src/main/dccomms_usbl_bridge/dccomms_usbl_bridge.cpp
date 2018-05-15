@@ -61,10 +61,7 @@ int main(int argc, char **argv) {
   bridge->SetRemoteAddr(3);
   bridge->SetClusterSize(atoi(argv[3]));
 
-  bridge->FlushLogOn(cpplogging::LogLevel::info);
   bridge->LogToFile("usbl_comms_bridge_log");
-
-  stream->FlushLogOn(cpplogging::LogLevel::info);
   stream->LogToFile("usbl_comms_bridge_device_log");
 
   bridge->Start();

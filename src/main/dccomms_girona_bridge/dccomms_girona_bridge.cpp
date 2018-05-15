@@ -27,8 +27,8 @@ void SIGINT_handler(int sig) {
   // comms->Stop();
   printf("Device closed.\n");
   fflush(stdout);
-  // comms->FlushLog();
-  // stream->FlushLog();
+  bridge->FlushLog();
+  stream->FlushLog();
   Utils::Sleep(2000);
   printf("Log messages flushed.\n");
 
@@ -66,10 +66,7 @@ int main(int argc, char **argv) {
   std::cout << "Remote add: " << remoteAddr << endl;
   bridge->SetClusterSize(atoi(argv[3]));
 
-  bridge->FlushLogOn(cpplogging::LogLevel::info);
   bridge->LogToFile("rov_comms_bridge_log");
-
-  stream->FlushLogOn(cpplogging::LogLevel::info);
   stream->LogToFile("rov_comms_bridge_device_log");
 
   bridge->Start();

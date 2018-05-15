@@ -31,6 +31,7 @@ void SIGINT_handler(int sig) {
   fflush(stdout);
   bridge->FlushLog();
   stream->FlushLog();
+  Log->FlushLog();
   Utils::Sleep(2000);
   printf("Log messages flushed.\n");
 
@@ -105,19 +106,13 @@ int main(int argc, char **argv) {
     stream->LogToFile(logFile + "_stream");
     bridge->LogToFile(logFile + "_bridge");
   }
-  bridge->FlushLogOn(info);
-  stream->FlushLogOn(info);
-  Log->FlushLogOn(info);
 
-  bridge->SetReceivedPacketWithoutErrorsCb([](PacketPtr pkt) {
-    Log->Info("RX {} bytes", pkt->GetPacketSize());
-  });
-  bridge->SetReceivedPacketWithErrorsCb([](PacketPtr pkt) {
-    Log->Warn("ERR {} bytes", pkt->GetPacketSize());
-  });
-  bridge->SetTransmitingPacketCb([](PacketPtr pkt) {
-    Log->Info("TX {} bytes", pkt->GetPacketSize());
-  });
+  bridge->SetReceivedPacketWithoutErrorsCb(
+      [](PacketPtr pkt) { Log->Info("RX {} bytes", pkt->GetPacketSize()); });
+  bridge->SetReceivedPacketWithErrorsCb(
+      [](PacketPtr pkt) { Log->Warn("ERR {} bytes", pkt->GetPacketSize()); });
+  bridge->SetTransmitingPacketCb(
+      [](PacketPtr pkt) { Log->Info("TX {} bytes", pkt->GetPacketSize()); });
 
   bridge->Start();
   while (1) {
