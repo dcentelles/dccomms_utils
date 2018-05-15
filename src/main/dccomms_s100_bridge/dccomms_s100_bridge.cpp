@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
   SignalManager::SetLastCallback(SIGINT, [&](int sig) {
     printf("Received %d signal\nClosing device socket...\n", sig);
-    bridge->Stop();
+    //bridge->Stop();
     printf("Device closed.\n");
     fflush(stdout);
     bridge->FlushLog();
