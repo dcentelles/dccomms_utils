@@ -24,12 +24,13 @@ int main(int argc, char **argv) {
   uint32_t modemBitrate = 600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
-  bool flush = false, asyncLog = true;
+  bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
   Log->Info("S100 Bridge");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
                              " - command line options");
     options.add_options()
+        ("C,flow-control-enabled", "the flow control by hw is enabled in the S100 modem", cxxopts::value<bool>(hwFlowControlEnabled))
         ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
         ("a,async-log", "async-log", cxxopts::value<bool>(asyncLog))
         ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
@@ -50,12 +51,13 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  Log->Info("dccommsId: {} ; port: {} ; bit-rate: {}", dccommsId, modemPort,
-            modemBitrate);
+  Log->Info("dccommsId: {} ; port: {} ; bit-rate: {} ; hw.FlowC: {}", dccommsId, modemPort,
+            modemBitrate, hwFlowControlEnabled);
 
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
   auto portBaudrate = SerialPortStream::BAUD_2400;
   stream = new S100Stream(modemPort, portBaudrate, modemBitrate);
+  stream->SetHwFlowControl(hwFlowControlEnabled);
 
   PacketBuilderPtr pb = std::make_shared<DataLinkFramePacketBuilder>(
       DataLinkFrame::fcsType::crc16);
