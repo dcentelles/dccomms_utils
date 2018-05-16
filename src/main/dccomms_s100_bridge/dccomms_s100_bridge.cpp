@@ -90,11 +90,11 @@ int main(int argc, char **argv) {
   }
 
   bridge->SetReceivedPacketWithoutErrorsCb(
-      [](PacketPtr pkt) { Log->Info("RX {} bytes", pkt->GetPacketSize()); });
+      [](PacketPtr pkt) { Log->Info("RX {}", pkt->GetPacketSize()); });
   bridge->SetReceivedPacketWithErrorsCb(
-      [](PacketPtr pkt) { Log->Warn("ERR {} bytes", pkt->GetPacketSize()); });
+      [](PacketPtr pkt) { Log->Warn("ERR {}", pkt->GetPacketSize()); });
   bridge->SetTransmitingPacketCb(
-      [](PacketPtr pkt) { Log->Info("TX {} bytes", pkt->GetPacketSize()); });
+      [](PacketPtr pkt) { Log->Info("TX {}", pkt->GetPacketSize()); });
 
   SignalManager::SetLastCallback(SIGINT, [&](int sig) {
     printf("Received %d signal\nClosing device socket...\n", sig);
