@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   stream->SetLogName(bridge->GetLogName() + ":S100Stream");
   stream->SetLogLevel(info);
 
-  auto logFormatter = std::make_shared<spdlog::pattern_formatter>("[%T.%F] %v");
+  auto logFormatter = std::make_shared<spdlog::pattern_formatter>("%T.%F %v");
   stream->SetLogFormatter(logFormatter);
   bridge->SetLogFormatter(logFormatter);
   Log->SetLogFormatter(logFormatter);
