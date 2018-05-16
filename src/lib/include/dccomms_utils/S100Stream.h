@@ -27,6 +27,7 @@ public:
   virtual void WritePacket(const PacketPtr &dlf);
 
   virtual void LogConfig();
+  virtual void SetHwFlowControl(bool v);
 
 private:
   void init();
@@ -37,6 +38,10 @@ private:
   int _maxBaudrate;
   uint64_t _byteTransmissionTimeNanos;
   int _maxTrunkSize;
+  std::function<void(const PacketPtr &)> _WritePacket;
+  void _WritePacketHwFlowControl(const PacketPtr &dlf);
+  void _WritePacketManualFlowControl(const PacketPtr &dlf);
+  uint8_t _endOfPacket[2] = {0xd, 0xa};
 };
 
 } /* namespace merbots */
