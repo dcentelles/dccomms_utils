@@ -28,7 +28,8 @@ void S100Stream::SetHwFlowControl(bool v) {
   if (hwFlowControl) {
     _WritePacket = std::bind(&S100Stream::_WritePacketHwFlowControl, this, _1);
   } else {
-    _WritePacket = std::bind(&S100Stream::_WritePacketManualFlowControl, this, _1);
+    _WritePacket =
+        std::bind(&S100Stream::_WritePacketManualFlowControl, this, _1);
   }
 }
 
@@ -105,6 +106,6 @@ void S100Stream::LogConfig() {
             _maxBaudrate, _byteTransmissionTimeNanos, _maxTrunkSize);
 }
 
-void S100Stream::WritePacket(const PacketPtr &dlf) {}
+void S100Stream::WritePacket(const PacketPtr &dlf) { _WritePacket(dlf); }
 
 } /* namespace merbots */
