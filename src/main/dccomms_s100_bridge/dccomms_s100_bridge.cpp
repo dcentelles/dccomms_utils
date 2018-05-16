@@ -21,7 +21,7 @@ S100Stream *stream;
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  uint32_t modemBitrate = 600;
+  uint32_t modemBitrate = 2400;
   std::string dccommsId;
   std::string logLevelStr, logFile;
   bool flush = false, asyncLog = true, hwFlowControlEnabled = false;

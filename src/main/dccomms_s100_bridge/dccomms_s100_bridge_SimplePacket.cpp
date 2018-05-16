@@ -22,7 +22,7 @@ S100Stream *stream;
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  uint32_t modemBitrate = 115200, txPacketSize = 20, rxPacketSize = 20;
+  uint32_t modemBitrate = 2400, txPacketSize = 20, rxPacketSize = 20;
   std::string dccommsId;
   std::string logLevelStr, logFile;
   bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
