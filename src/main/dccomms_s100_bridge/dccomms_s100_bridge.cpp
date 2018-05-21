@@ -21,7 +21,7 @@ S100Stream *stream;
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  uint32_t modemBitrate = 2400;
+  uint32_t modemBitrate = 9600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
   bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
         ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
         ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
         ("l,log-level", "log level: critical,debug,err,info,off,trace,warn", cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("b, modem-bitrate", "maximum bitrate", cxxopts::value<uint32_t>(modemBitrate))
+        ("b, modem-bitrate", "maximum bitrate (used when hw flow control is disabled)", cxxopts::value<uint32_t>(modemBitrate))
         ("help", "Print help")
         ("dccomms-id", "dccomms id for bridge", cxxopts::value<std::string>(dccommsId)->default_value("s100"));
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
             modemBitrate, hwFlowControlEnabled);
 
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
-  auto portBaudrate = SerialPortStream::BAUD_2400;
+  auto portBaudrate = SerialPortStream::BAUD_9600;
   stream = new S100Stream(modemPort, portBaudrate, modemBitrate);
   stream->SetHwFlowControl(hwFlowControlEnabled);
 
