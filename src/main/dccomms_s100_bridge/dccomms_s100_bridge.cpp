@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
         ("b, baud-rate", "Serial port baudrate (default: 9600)", cxxopts::value<uint32_t>(portBaudrate))
         ("l,log-level", "log level: critical,debug,err,info,off,trace,warn", cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("b, modem-bitrate", "maximum bitrate (used when hw flow control is disabled)", cxxopts::value<uint32_t>(modemBitrate))
+        ("B, modem-bitrate", "maximum bitrate (used when hw flow control is disabled)", cxxopts::value<uint32_t>(modemBitrate))
         ("help", "Print help")
         ("dccomms-id", "dccomms id for bridge", cxxopts::value<std::string>(dccommsId)->default_value("s100"));
 
