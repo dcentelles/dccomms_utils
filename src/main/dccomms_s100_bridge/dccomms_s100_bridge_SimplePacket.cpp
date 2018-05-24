@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   uint32_t modemBitrate = 9600, txPacketSize = 20, rxPacketSize = 20, portBaudrate = 9600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
-  bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
+  bool flush = false, syncLog = false, hwFlowControlEnabled = false;
   Log->Info("S100 Bridge");
   try {
     cxxopts::Options options("dccomms_utils/s100_bridge",
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     options.add_options()
         ("C,flow-control-enabled", "the flow control by hw is enabled in the S100 modem", cxxopts::value<bool>(hwFlowControlEnabled))
         ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
-        ("a,async-log", "async-log", cxxopts::value<bool>(asyncLog))
+        ("s,sync-log", "sync-log", cxxopts::value<bool>(syncLog))
         ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
         ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
         ("b, baud-rate", "Serial port baudrate (default: 9600)", cxxopts::value<uint32_t>(portBaudrate))
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     Log->FlushLogOn(info);
     Log->Info("Flush log on info");
   }
-  if (asyncLog) {
+  if (!syncLog) {
     Log->SetAsyncMode();
     Log->Info("Async. log");
   }
