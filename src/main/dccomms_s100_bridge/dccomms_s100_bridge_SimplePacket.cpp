@@ -22,7 +22,7 @@ S100Stream *stream;
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  uint32_t modemBitrate = 9600, txPacketSize = 20, rxPacketSize = 20;
+  uint32_t modemBitrate = 9600, txPacketSize = 20, rxPacketSize = 20, portBaudrate = 9600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
   bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
         ("a,async-log", "async-log", cxxopts::value<bool>(asyncLog))
         ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
         ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
+        ("b, baud-rate", "Serial port baudrate (default: 9600)", cxxopts::value<uint32_t>(portBaudrate))
         ("l,log-level", "log level: critical,debug,err,info,off,trace,warn", cxxopts::value<std::string>(logLevelStr)->default_value("info"))
         ("b, modem-bitrate", "maximum bitrate (used when hw flow control is disabled)", cxxopts::value<uint32_t>(modemBitrate))
         ("help", "Print help")
@@ -58,8 +59,8 @@ int main(int argc, char **argv) {
             modemBitrate, hwFlowControlEnabled);
 
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
-  auto portBaudrate = SerialPortStream::BAUD_9600;
-  stream = new S100Stream(modemPort, portBaudrate, modemBitrate);
+  auto baudrate = SerialPortStream::BaudRateFromUInt(portBaudrate);
+  stream = new S100Stream(modemPort, baudrate, modemBitrate);
   stream->SetHwFlowControl(hwFlowControlEnabled);
 
   PacketBuilderPtr txpb = CreateObject<SimplePacketBuilder>(0, FCS::CRC16);

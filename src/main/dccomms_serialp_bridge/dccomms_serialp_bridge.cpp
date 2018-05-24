@@ -3,7 +3,7 @@
 #include <dccomms/CommsBridge.h>
 #include <dccomms/DataLinkFrame.h>
 #include <dccomms/Utils.h>
-#include <dccomms_utils/S100Stream.h>
+#include <dccomms/SerialPortStream.h>
 #include <iostream>
 
 #include <cstdio>
@@ -12,32 +12,30 @@
 
 using namespace std;
 using namespace dccomms;
-using namespace dccomms_utils;
 using namespace cpputils;
 
-LoggerPtr Log = cpplogging::CreateLogger("s100bridge");
+LoggerPtr Log = cpplogging::CreateLogger("SerialPortBridgeMain");
 CommsBridge *bridge;
-S100Stream *stream;
+SerialPortStream *stream;
 
 int main(int argc, char **argv) {
   std::string modemPort;
-  uint32_t modemBitrate = 9600, portBaudrate = 9600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
+  uint32_t portBaudrate = 9600;
   bool flush = false, asyncLog = true, hwFlowControlEnabled = false;
-  Log->Info("S100 Bridge");
+  Log->Info("SerialPort Bridge");
   try {
-    cxxopts::Options options("dccomms_utils/s100_bridge",
+    cxxopts::Options options("dccomms_utils/serialp_bridge",
                              " - command line options");
     options.add_options()
-        ("C,flow-control-enabled", "the flow control by hw is enabled in the S100 modem", cxxopts::value<bool>(hwFlowControlEnabled))
+        ("C,flow-control-enabled", "the flow control by hw is enabled in the modem", cxxopts::value<bool>(hwFlowControlEnabled))
         ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
         ("a,async-log", "async-log", cxxopts::value<bool>(asyncLog))
         ("f,log-file", "File to save the log", cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("example2_log"))
         ("p,modem-port", "Modem's serial port", cxxopts::value<std::string>(modemPort)->default_value("/dev/ttyUSB0"))
         ("b, baud-rate", "Serial port baudrate (default: 9600)", cxxopts::value<uint32_t>(portBaudrate))
         ("l,log-level", "log level: critical,debug,err,info,off,trace,warn", cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("b, modem-bitrate", "maximum bitrate (used when hw flow control is disabled)", cxxopts::value<uint32_t>(modemBitrate))
         ("help", "Print help")
         ("dccomms-id", "dccomms id for bridge", cxxopts::value<std::string>(dccommsId)->default_value("s100"));
 
@@ -53,11 +51,10 @@ int main(int argc, char **argv) {
   }
 
   Log->Info("dccommsId: {} ; port: {} ; bit-rate: {} ; hw.FlowC: {}", dccommsId, modemPort,
-            modemBitrate, hwFlowControlEnabled);
+            hwFlowControlEnabled);
 
   LogLevel logLevel = cpplogging::GetLevelFromString(logLevelStr);
-  auto baudrate = SerialPortStream::BaudRateFromUInt(portBaudrate);
-  stream = new S100Stream(modemPort, baudrate, modemBitrate);
+  stream = new SerialPortStream(modemPort, portBaudrate);
   stream->SetHwFlowControl(hwFlowControlEnabled);
 
   PacketBuilderPtr pb = std::make_shared<DataLinkFramePacketBuilder>(
@@ -67,8 +64,8 @@ int main(int argc, char **argv) {
 
   bridge->SetLogLevel(logLevel);
   bridge->SetCommsDeviceId(dccommsId);
-  bridge->SetLogName("S100Bridge");
-  stream->SetLogName(bridge->GetLogName() + ":S100Stream");
+  bridge->SetLogName("SerialPortBridge");
+  stream->SetLogName(bridge->GetLogName() + ":SerialPort");
   stream->SetLogLevel(info);
 
   auto logFormatter = std::make_shared<spdlog::pattern_formatter>("%T.%F %v");
