@@ -132,14 +132,8 @@ target_link_libraries(dccomms_usbl_bridge ${PROJECT_NAME})
 add_executable(dccomms_s100_bridge ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
 target_link_libraries(dccomms_s100_bridge ${PROJECT_NAME} cxxopts)
 
-add_executable(dccomms_s100_bridge_SimplePacket ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge_SimplePacket.cpp)
-target_link_libraries(dccomms_s100_bridge_SimplePacket ${PROJECT_NAME} cxxopts)
-
 add_executable(dccomms_serialp_bridge ${SRCPATH}main/dccomms_serialp_bridge/dccomms_serialp_bridge.cpp)
 target_link_libraries(dccomms_serialp_bridge ${PROJECT_NAME} cxxopts)
-
-add_executable(dccomms_serialp_bridge_SimplePacket ${SRCPATH}main/dccomms_serialp_bridge/dccomms_serialp_bridge_SimplePacket.cpp)
-target_link_libraries(dccomms_serialp_bridge_SimplePacket ${PROJECT_NAME} cxxopts)
 
 install(TARGETS ${PROJECT_NAME} dccomms_girona_bridge dccomms_usbl_bridge dccomms_s100_bridge
         LIBRARY DESTINATION "lib"
