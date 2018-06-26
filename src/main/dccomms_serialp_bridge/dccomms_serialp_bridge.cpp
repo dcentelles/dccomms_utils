@@ -4,6 +4,7 @@
 #include <dccomms/Utils.h>
 #include <dccomms_packets/SimplePacket.h>
 #include <dccomms_packets/VariableLengthPacket.h>
+#include <dccomms_packets/VariableLength2BPacket.h>
 #include <dccomms/SerialPortStream.h>
 #include <iostream>
 
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
   std::string dccommsId;
   std::string logLevelStr, logFile;
   bool flush = false, syncLog = false, hwFlowControlEnabled = false;
-  enum PktType { DLF = 0, SP = 1, VLP = 2};
+  enum PktType { DLF = 0, SP = 1, VLP = 2, VL2BP = 3};
   uint32_t txPktTypeInt = 1, rxPktTypeInt = 1;
   Log->Info("SerialPort Bridge");
   try {
@@ -44,8 +45,8 @@ int main(int argc, char **argv) {
         ("dccomms-id", "dccomms id for bridge", cxxopts::value<std::string>(dccommsId)->default_value("s100"))
         ("tx-packet-size", "transmitted SimplePacket size in bytes (=overhead+payload)", cxxopts::value<uint32_t>(txPacketSize))
         ("rx-packet-size", "received SimplePacket size in bytes (=overhead+payload)", cxxopts::value<uint32_t>(rxPacketSize))
-        ("tx-packet-type", "0: DataLinkFrame, 1: SimplePacket (default), 2: VariableLengthPacket (payload size up to 255).", cxxopts::value<uint32_t>(txPktTypeInt))
-        ("rx-packet-type", "0: DataLinkFrame, 1: SimplePacket (default), 2: VariableLengthPacket (payload size up to 255).", cxxopts::value<uint32_t>(rxPktTypeInt));
+        ("tx-packet-type", "0: DataLinkFrame, 1: SimplePacket (default), 2: VariableLengthPacket (1 byte encoding payload size), 3: VariableLength2BPacket (2 bytes for payload size).", cxxopts::value<uint32_t>(txPktTypeInt))
+        ("rx-packet-type", "0: DataLinkFrame, 1: SimplePacket (default), 2: VariableLengthPacket (1 byte encoding payload size), 3: VariableLength2BPacket (2 bytes for payload size).", cxxopts::value<uint32_t>(rxPktTypeInt));
 
     auto result = options.parse(argc, argv);
     if (result.count("help")) {
@@ -80,6 +81,10 @@ int main(int argc, char **argv) {
         txpb = CreateObject<VariableLengthPacketBuilder>();
         break;
     }
+    case VL2BP:{
+        txpb = CreateObject<VariableLength2BPacketBuilder>();
+        break;
+    }
     default:
       std::cerr << "wrong tx packet type: "<< txPktType << std::endl;
       return 1;
@@ -100,6 +105,10 @@ int main(int argc, char **argv) {
     }
     case VLP:{
         rxpb = CreateObject<VariableLengthPacketBuilder>();
+        break;
+    }
+    case VL2BP:{
+        rxpb = CreateObject<VariableLength2BPacketBuilder>();
         break;
     }
     default:
