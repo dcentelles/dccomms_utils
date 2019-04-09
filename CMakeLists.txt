@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.5.1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE   ON)
+#It seams that from Ubuntu 17.10 the linker flag --disable-new-dtags is needed
+#for the executable to be able to find absolute linked shared libraries with rpath.
+#https://stackoverflow.com/questions/47117443/dynamic-linking-with-rpath-not-working-under-ubuntu-17-10
+SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags")
 
 #SET PROJECT NAME
 SET(PROJECT_NAME_ORIG "dccomms_utils" )
