@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   bridge->SetCommsDeviceId(dccommsId);
   bridge->SetLogName("S100Bridge");
   stream->SetLogName(bridge->GetLogName() + ":S100Stream");
-  stream->SetLogLevel(info);
+  stream->SetLogLevel(logLevel);
 
   auto logFormatter = std::make_shared<spdlog::pattern_formatter>("%T.%F %v");
   stream->SetLogFormatter(logFormatter);
