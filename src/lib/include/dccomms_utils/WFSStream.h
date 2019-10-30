@@ -8,7 +8,7 @@
 #ifndef MERBOTS_LIB_INCLUDE_MERBOTS_WFSSTREAM_H_
 #define MERBOTS_LIB_INCLUDE_MERBOTS_WFSSTREAM_H_
 
-#include <cpplogging/Loggable.h>
+#include <cpplogging/Logger.h>
 #include <dccomms_utils/Constants.h>
 #include <functional>
 #include <queue>
@@ -19,7 +19,7 @@ using namespace cpplogging;
 
 // virtual inheritance:
 // http://www.cprogramming.com/tutorial/virtual_inheritance.html
-class WFSStream : public virtual Loggable {
+class WFSStream : public virtual Logger {
 public:
   WFSStream();
   virtual ~WFSStream();
