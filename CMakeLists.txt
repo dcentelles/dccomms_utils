@@ -117,7 +117,8 @@ SET(${PROJECT_NAME}_CPP_FILES
                         ${SRCPATH}lib/EvologicsStream.cpp
                         ${SRCPATH}lib/WFSStream.cpp
                         ${SRCPATH}lib/S100Stream.cpp
-	)
+                        ${SRCPATH}lib/NanoModemStream.cpp
+        )
 SET(${PROJECT_NAME}_CXX_COMPILE_FLAGS "-fPIC -std=c++0x")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${PROJECT_NAME}_CXX_COMPILE_FLAGS}")
 
