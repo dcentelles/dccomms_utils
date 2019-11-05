@@ -137,6 +137,12 @@ target_link_libraries(dccomms_usbl_bridge ${PROJECT_NAME})
 add_executable(dccomms_s100_bridge ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
 target_link_libraries(dccomms_s100_bridge ${PROJECT_NAME} cxxopts)
 
+add_executable(tdoa-tx ${SRCPATH}main/tdoa/tdoa-tx.cpp)
+target_link_libraries(tdoa-tx ${PROJECT_NAME} cxxopts)
+
+add_executable(tdoa-rx ${SRCPATH}main/tdoa/tdoa-rx.cpp)
+target_link_libraries(tdoa-rx ${PROJECT_NAME} cxxopts)
+
 add_executable(dccomms_serialp_bridge ${SRCPATH}main/dccomms_serialp_bridge/dccomms_serialp_bridge.cpp)
 target_link_libraries(dccomms_serialp_bridge ${PROJECT_NAME} cxxopts)
 
