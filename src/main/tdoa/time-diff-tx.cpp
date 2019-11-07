@@ -84,12 +84,17 @@ int main(int argc, char **argv) {
   uint16_t count = 0;
   int first_its = 1;
   uint16_t max = samples + first_its;
+  uint8_t count_hl[2];
+  uint8_t * count_h = count_hl;
+  uint8_t * count_l = count_hl+1;
   std::thread main([&]() {
     while (count <= max) {
       ac0_stream->FlushIO();
       td.Reset();
       ac0_stream << "$B2";
-      ac0_stream->Write(&count, sizeof(count));
+      *count_h = count >> 8;
+      *count_l = count & 0x00ff;
+      ac0_stream->Write(&count_hl, 2);
       if(first_its < count)
         CsvLog->Info("{}", count);
       else

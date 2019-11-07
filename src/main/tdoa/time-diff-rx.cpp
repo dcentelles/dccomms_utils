@@ -86,11 +86,15 @@ int main(int argc, char **argv) {
   uint16_t count = 0;
   uint16_t rx_count = 0xffff;
   int first_its = 2;
+  uint8_t count_hl[4];
+  uint8_t * count_h = count_hl;
+  uint8_t * count_l = count_hl+1;
   std::thread main([&]() {
     while (1) {
       ac0_stream->FlushIO();
       ac0_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
-      int res = ac0_stream->Read(&rx_count, sizeof(count) + 2);
+      int res = ac0_stream->Read(&count_hl, sizeof(count) + 2);
+      rx_count = ((uint16_t)*count_h << 8) | *count_l;
       elapsed = td.Elapsed();
       if (count >= first_its) {
         cursample += 1;
