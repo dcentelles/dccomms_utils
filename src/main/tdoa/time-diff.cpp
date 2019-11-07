@@ -117,9 +117,9 @@ int main(int argc, char **argv) {
         long now = td.Now();
         auto diff = static_cast<unsigned long>(now - last);
         nanos += diff;
+        double average = nanos / (double)cursample ;
         double elapsed = diff / (double)1e9;
-        CsvLog->Info("{} , {} , {} , {} , {}", rx_count, last, now, diff,
-                     elapsed);
+        CsvLog->Info("{} , {} , {} , {} , {} , {} , {}", rx_count, last, now, diff, elapsed, static_cast<uint64_t>(std::round(average)), average / 1e9);
         if (cursample == samples) {
           Log->Info("END");
           break;

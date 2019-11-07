@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     Log->Info("Async. log");
   }
 
-  auto ac0_stream = CreateObject<SerialPortStream>("/dev/ttyUSB0", ac_baudrate);
+  auto ac0_stream = CreateObject<SerialPortStream>(ac_modemPort, ac_baudrate);
 
   ac0_stream->Open();
   CsvLog->SetLogFormatter(
@@ -86,7 +86,6 @@ int main(int argc, char **argv) {
   cpputils::TimerNanos td;
   uint64_t elapsed;
   uint32_t cursample = 0;
-  unsigned long nanos = 0;
   uint16_t count = 0;
   uint16_t rx_count = 0xffff;
   int first_its = 2;
@@ -98,22 +97,15 @@ int main(int argc, char **argv) {
       elapsed = td.Elapsed();
       if (count > first_its) {
         cursample += 1;
-        long last = td.Last();
-        long now = td.Now();
-        auto diff = static_cast<unsigned long>(now - last);
-        nanos += diff;
-        double elapsed = diff / (double)1e9;
-        CsvLog->Info("{} , {} , {} , {} , {}", rx_count, last, now, diff,
-                     elapsed);
+        CsvLog->Info("{}", rx_count);
         if (cursample == samples) {
           Log->Info("END");
           break;
         }
       } else {
-        Log->Info("message: {} ; End to End: {}", rx_count, elapsed / 1e9);
+        Log->Info("message: {}", rx_count);
       }
       count++;
-      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
   });
 

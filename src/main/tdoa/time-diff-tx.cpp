@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     Log->Info("Async. log");
   }
 
-  auto ac0_stream = CreateObject<SerialPortStream>("/dev/ttyUSB0", ac_baudrate);
+  auto ac0_stream = CreateObject<SerialPortStream>(ac_modemPort, ac_baudrate);
 
   ac0_stream->Open();
   CsvLog->SetLogFormatter(
