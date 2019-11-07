@@ -56,9 +56,6 @@ int main(int argc, char **argv) {
 
   auto ac_baudrate = SerialPortStream::BaudRateFromUInt(ac_portBaudrate);
 
-  auto logFormatter = std::make_shared<spdlog::pattern_formatter>("%T.%F %v");
-  Log->SetLogFormatter(logFormatter);
-
   if (logFile != "") {
     Log->LogToFile(logFile);
   }
@@ -74,28 +71,34 @@ int main(int argc, char **argv) {
   auto ac0_stream = CreateObject<SerialPortStream>(ac_modemPort, ac_baudrate);
 
   ac0_stream->Open();
-  CsvLog->SetLogFormatter(
-      std::make_shared<spdlog::pattern_formatter>("%T.%F , %v"));
-  // CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%v"));
   CsvLog->LogToFile(csvfile);
   CsvLog->LogToConsole(true);
+  Log->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%T.%F %v"));
+  Log->LogToConsole(true);
+  CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%T.%F , %v"));
 
   char message[100];
   message[1] = 0;
   ac0_stream->FlushInput();
   cpputils::TimerNanos td;
   uint16_t count = 0;
+  int first_its = 1;
+  uint16_t max = samples + first_its;
   std::thread main([&]() {
-    while (1) {
+    while (count <= max) {
       ac0_stream->FlushIO();
       td.Reset();
       ac0_stream << "$B2";
       ac0_stream->Write(&count, sizeof(count));
-      CsvLog->Info("{}", count);
+      if(first_its < count)
+        CsvLog->Info("{}", count);
+      else
+        Log->Info("SYNC: {}", count);
       count++;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
+    Log->Info("END");
   });
 
   SignalManager::SetLastCallback(SIGINT, [&](int sig) {

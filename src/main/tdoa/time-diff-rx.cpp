@@ -56,9 +56,6 @@ int main(int argc, char **argv) {
 
   auto ac_baudrate = SerialPortStream::BaudRateFromUInt(ac_portBaudrate);
 
-  auto logFormatter = std::make_shared<spdlog::pattern_formatter>("%T.%F %v");
-  Log->SetLogFormatter(logFormatter);
-
   if (logFile != "") {
     Log->LogToFile(logFile);
   }
@@ -74,11 +71,11 @@ int main(int argc, char **argv) {
   auto ac0_stream = CreateObject<SerialPortStream>(ac_modemPort, ac_baudrate);
 
   ac0_stream->Open();
-  CsvLog->SetLogFormatter(
-      std::make_shared<spdlog::pattern_formatter>("%T.%F , %v"));
-  // CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%v"));
   CsvLog->LogToFile(csvfile);
   CsvLog->LogToConsole(true);
+  Log->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%T.%F %v"));
+  Log->LogToConsole(true);
+  CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%T.%F , %v"));
 
   ac0_stream->FlushInput();
   char ac_pre[50] = "#B0022";
@@ -95,7 +92,7 @@ int main(int argc, char **argv) {
       ac0_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
       int res = ac0_stream->Read(&rx_count, sizeof(count) + 2);
       elapsed = td.Elapsed();
-      if (count > first_its) {
+      if (count >= first_its) {
         cursample += 1;
         CsvLog->Info("{}", rx_count);
         if (cursample == samples) {
@@ -103,7 +100,7 @@ int main(int argc, char **argv) {
           break;
         }
       } else {
-        Log->Info("message: {}", rx_count);
+        Log->Info("SYNC: {}", rx_count);
       }
       count++;
     }
