@@ -150,6 +150,12 @@ target_link_libraries(tdoa-rx ${PROJECT_NAME} cxxopts)
 add_executable(time-diff ${SRCPATH}main/tdoa/time-diff.cpp)
 target_link_libraries(time-diff ${PROJECT_NAME} cxxopts)
 
+add_executable(time-diff-tx ${SRCPATH}main/tdoa/time-diff-tx.cpp)
+target_link_libraries(time-diff-tx ${PROJECT_NAME} cxxopts)
+
+add_executable(time-diff-rx ${SRCPATH}main/tdoa/time-diff-rx.cpp)
+target_link_libraries(time-diff-rx ${PROJECT_NAME} cxxopts)
+
 add_executable(dccomms_serialp_bridge ${SRCPATH}main/dccomms_serialp_bridge/dccomms_serialp_bridge.cpp)
 target_link_libraries(dccomms_serialp_bridge ${PROJECT_NAME} cxxopts)
 

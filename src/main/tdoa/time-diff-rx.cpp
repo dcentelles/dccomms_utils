@@ -14,33 +14,31 @@ using namespace dccomms;
 using namespace cpputils;
 
 int main(int argc, char **argv) {
-  LoggerPtr Log = cpplogging::CreateLogger("time-diff");
+  LoggerPtr Log = cpplogging::CreateLogger("time-diff-rx");
   LoggerPtr CsvLog = cpplogging::CreateLogger("CSV");
   CsvLog->SetAsyncMode();
   std::string ac_modemPort, rf_modemPort;
-  uint32_t ac_portBaudrate = 9600, rf_portBaudrate = 9600;
+  uint32_t ac_portBaudrate = 9600;
   std::string dccommsId;
   std::string logLevelStr, logFile;
   uint32_t samples = 10;
   std::string csvfile = "data.csv";
   bool flush = false, syncLog = false, hwFlowControlEnabled = false;
-  Log->Info("TDoA-RX");
+  Log->Info("time-diff-RX");
   try {
-    cxxopts::Options options("dccomms_utils/time-diff",
-                             " - command line options");
-    options.add_options()
-        ("C,flow-control-enabled", "the flow control by hw is enabled in the modem", cxxopts::value<bool>(hwFlowControlEnabled))
-        ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
-        ("s,sync-log", "sync-log (default: false -> async.)", cxxopts::value<bool>(syncLog))
-        ("f,log-file", "File to save the log",cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("bridge_log"))
-        ("csv", "sample files", cxxopts::value<std::string>(csvfile))
-        ("ac-modem-port", "AC Modem's serial port",cxxopts::value<std::string>(ac_modemPort)->default_value("/dev/ttyUSB0"))
-        ("rf-modem-port", "RF Modem's serial port",cxxopts::value<std::string>(rf_modemPort)->default_value("/dev/ttyUSB1"))
-        ("ac-baud-rate", "AC Serial port baudrate (default: 9600)",cxxopts::value<uint32_t>(ac_portBaudrate))
-        ("samples", "default 10", cxxopts::value<uint32_t>(samples))
-        ("rf-baud-rate", "RF Serial port baudrate (default: 9600)",cxxopts::value<uint32_t>(rf_portBaudrate))
-        ("l,log-level", "log level: critical,debug,err,info,off,trace,warn",cxxopts::value<std::string>(logLevelStr)->default_value("info"))
-        ("help", "Print help");
+      cxxopts::Options options("dccomms_utils/time-diff-tx",
+                               " - command line options");
+      options.add_options()
+      ("C,flow-control-enabled", "the flow control by hw is enabled in the modem", cxxopts::value<bool>(hwFlowControlEnabled))
+      ("F,flush-log", "flush log", cxxopts::value<bool>(flush))
+      ("s,sync-log", "sync-log (default: false -> async.)", cxxopts::value<bool>(syncLog))
+      ("f,log-file", "File to save the log",cxxopts::value<std::string>(logFile)->default_value("")->implicit_value("bridge_log"))
+      ("csv", "sample files", cxxopts::value<std::string>(csvfile))
+      ("ac-modem-port", "AC Modem's serial port",cxxopts::value<std::string>(ac_modemPort)->default_value("/dev/ttyUSB0"))
+      ("ac-baud-rate", "AC Serial port baudrate (default: 9600)",cxxopts::value<uint32_t>(ac_portBaudrate))
+      ("samples", "default 10", cxxopts::value<uint32_t>(samples))
+      ("l,log-level", "log level: critical,debug,err,info,off,trace,warn",cxxopts::value<std::string>(logLevelStr)->default_value("info"))
+      ("help", "Print help");
 
     auto result = options.parse(argc, argv);
     if (result.count("help")) {
@@ -75,22 +73,14 @@ int main(int argc, char **argv) {
 
   auto ac0_stream = CreateObject<SerialPortStream>("/dev/ttyUSB0", ac_baudrate);
 
-  auto ac1_stream = CreateObject<SerialPortStream>("/dev/ttyUSB1", ac_baudrate);
-
   ac0_stream->Open();
-  ac1_stream->Open();
-  // If you want to avoid showing the relative simulation time use
-  // the native spdlog::pattern_formatter instead:
-  // SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("[%D %T.%F]
-  // %v"));
-  CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%v"));
+  CsvLog->SetLogFormatter(
+      std::make_shared<spdlog::pattern_formatter>("%T.%F , %v"));
+  // CsvLog->SetLogFormatter(std::make_shared<spdlog::pattern_formatter>("%v"));
   CsvLog->LogToFile(csvfile);
   CsvLog->LogToConsole(true);
 
-  char message[100];
-  message[1] = 0;
   ac0_stream->FlushInput();
-  ac1_stream->FlushInput();
   char ac_pre[50] = "#B0022";
   size_t ac_pre_len = std::strlen(ac_pre);
   cpputils::TimerNanos td;
@@ -103,13 +93,8 @@ int main(int argc, char **argv) {
   std::thread main([&]() {
     while (1) {
       ac0_stream->FlushIO();
-      ac1_stream->FlushIO();
-      td.Reset();
-      ac0_stream << "$B2";
-      ac0_stream->Write(&count, sizeof(count));
-      Log->Info("TX {}", count);
-      ac1_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
-      int res = ac1_stream->Read(&rx_count, sizeof(count) + 2);
+      ac0_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
+      int res = ac0_stream->Read(&rx_count, sizeof(count) + 2);
       elapsed = td.Elapsed();
       if (count > first_its) {
         cursample += 1;
@@ -128,7 +113,6 @@ int main(int argc, char **argv) {
         Log->Info("message: {} ; End to End: {}", rx_count, elapsed / 1e9);
       }
       count++;
-
       std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
   });
