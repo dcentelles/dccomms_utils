@@ -138,6 +138,9 @@ target_link_libraries(dccomms_usbl_bridge ${PROJECT_NAME})
 add_executable(dccomms_s100_bridge ${SRCPATH}main/dccomms_s100_bridge/dccomms_s100_bridge.cpp)
 target_link_libraries(dccomms_s100_bridge ${PROJECT_NAME} cxxopts)
 
+add_executable(dccomms_nanomodem_bridge ${SRCPATH}main/dccomms_nanomodem_bridge/dccomms_nanomodem_bridge.cpp)
+target_link_libraries(dccomms_nanomodem_bridge ${PROJECT_NAME} cxxopts)
+
 add_executable(tdoa-tx ${SRCPATH}main/tdoa/tdoa-tx.cpp)
 target_link_libraries(tdoa-tx ${PROJECT_NAME} cxxopts)
 

@@ -24,7 +24,7 @@ void NanoModemStream::init() {
   SetHwFlowControl(false);
   _byteTransmissionTimeNanos = 0.2 * 1e9;
 
-  _maxTrunkSize = 8;
+  _maxTrunkSize = 7;
 }
 
 void NanoModemStream::_WritePacketManualFlowControl(const PacketPtr &dlf) {
@@ -56,6 +56,8 @@ void NanoModemStream::_WritePacketManualFlowControl(const PacketPtr &dlf) {
         ceil(left * _byteTransmissionTimeNanos + _baseTransmissionTimeNanos);
     Log->debug("Sending trunk of {} bytes and end of packet... ({} ms)", left,
                _trunkTransmissionTime);
+    Write("$B", 2);
+    WriteUint8('0' + left);
     Write(ptr, left);
   }
   std::this_thread::sleep_for(std::chrono::nanoseconds(_trunkTransmissionTime));
