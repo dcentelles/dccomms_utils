@@ -3,7 +3,8 @@
 #include <cpputils/Timer.h>
 #include <cstdio>
 #include <cstring>
-#include <dccomms/SerialPortStream.h>
+#include <dccomms/Arduino.h>
+#include <dccomms/DataLinkFrame.h>
 
 #include <cstdio>
 #include <cxxopts.hpp>
@@ -81,14 +82,28 @@ int main(int argc, char **argv) {
     Log->SetAsyncMode();
     Log->Info("Async. log");
   }
+Log->LogToConsole(true);
+auto ac_stream =
+    CreateObject<SerialPortStream>(ac_modemPort.c_str(), ac_baudrate);
 
-  auto ac_stream =
-      CreateObject<SerialPortStream>(ac_modemPort.c_str(), ac_baudrate);
-  auto rf_stream =
-      CreateObject<SerialPortStream>(rf_modemPort.c_str(), rf_baudrate);
+auto rf_stream =
+    CreateObject<SerialPortStream>(rf_modemPort.c_str(), rf_baudrate);
 
-  ac_stream->Open();
-  rf_stream->Open();
+//  Arduino arduino = Arduino::FindArduino(Arduino::BAUD_115200,
+//                                        "Hello, are you TX?\n",
+//                                        "Yes, I'm TX");
+
+//  auto rf_stream = cpputils::Ptr<Arduino>(&arduino);
+
+//ac_stream->Open();
+rf_stream->Open();
+//  if(!arduino.IsOpen())
+//  {
+//      Log->Error("arduino not found");
+//  }
+  auto checksumType = DataLinkFrame::fcsType::crc16;
+  auto pb = CreateObject<DataLinkFramePacketBuilder>(checksumType);
+  auto pkt = pb->Create();
 
   int cont = 0;
   char message[100];
@@ -105,25 +120,34 @@ int main(int argc, char **argv) {
   std::thread main([&]() {
     while (1) {
       rf_stream->FlushIO();
-      rf_stream->Read(message, rf_pre_len);
-      ac_stream->FlushIO();
+      //rf_stream->Read(message, rf_pre_len);
+      rf_stream >> pkt;
+      //ac_stream->FlushIO();
+
       td.Reset();
       //      message[rf_pre_len] = 0;
       //      Log->Info("RF: {} -- {}", message,
       //                ac_stream->Available());
       message[1] = 0;
-      Log->Info("RF RX {}", message);
-      ac_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
-      int res = ac_stream->Read(message, 3);
-      message[1] = 0;
-      elapsed = td.Elapsed();
-      Log->Info("message: {} ; TDoA: {}", message, elapsed);
+      if(pkt->PacketIsOk())
+      {
+          Log->Info("RF RX");
+          //      ac_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
+          //      int res = ac_stream->Read(message, 3);
+//          message[1] = 0;
+//          elapsed = td.Elapsed();
+//          Log->Info("message: {} ; TDoA: {}", message, elapsed);
 
-      //      ac_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
-      //      int res = ac_stream->Read(message, 3);
-      //      message[1] = 0;
-      //      elapsed = td.Elapsed();
-      //      Log->Info("message: {} ; TDoA: {}", message, elapsed);
+          //      ac_stream->WaitFor((const uint8_t *)ac_pre, ac_pre_len);
+          //      int res = ac_stream->Read(message, 3);
+          //      message[1] = 0;
+          //      elapsed = td.Elapsed();
+          //      Log->Info("message: {} ; TDoA: {}", message, elapsed);
+      }else
+      {
+          Log->Warn("RF ERR");
+
+      }
     }
   });
 

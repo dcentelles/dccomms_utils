@@ -2,7 +2,8 @@
 #include <cpputils/SignalManager.h>
 #include <cpputils/Timer.h>
 #include <cstdio>
-#include <dccomms/SerialPortStream.h>
+#include <dccomms/Arduino.h>
+#include <dccomms/DataLinkFrame.h>
 
 #include <cstdio>
 #include <cxxopts.hpp>
@@ -83,11 +84,31 @@ int main(int argc, char **argv) {
 
   auto ac_stream =
       CreateObject<SerialPortStream>(ac_modemPort.c_str(), ac_baudrate);
+
   auto rf_stream =
       CreateObject<SerialPortStream>(rf_modemPort.c_str(), rf_baudrate);
 
-  ac_stream->Open();
+//  Arduino arduino = Arduino::FindArduino(Arduino::BAUD_115200,
+//                                        "Hello, are you TX?\n",
+//                                        "Yes, I'm TX");
+
+//  auto rf_stream = cpputils::Ptr<Arduino>(&arduino);
+
+  //ac_stream->Open();
   rf_stream->Open();
+//  if(!arduino.IsOpen())
+//  {
+//      Log->Error("arduino not found");
+//  }
+
+  Log->LogToConsole(true);
+
+  auto checksumType = DataLinkFrame::fcsType::crc16;
+  auto pb = CreateObject<DataLinkFramePacketBuilder>(checksumType);
+  auto pkt = pb->Create();
+  std::string strmsg = "Hello World";
+  pkt->SetPayload((uint8_t*)strmsg.c_str(), strmsg.size());
+  pkt->PayloadUpdated(strmsg.size());
 
   int cont = 0;
   uint8_t rf_pre[50] = {'1', 0xd, 0xa};
@@ -95,14 +116,16 @@ int main(int argc, char **argv) {
   cpputils::Timer td;
   uint elapsed;
   while (1) {
-    msg = 'a' + cont;
-    td.Reset();
-    ac_stream << "$B1" << msg;
-    rf_pre[0] = msg;
-    rf_stream->Write(rf_pre, 3);
-    elapsed = td.Elapsed();
-    Log->Info("T2: {}",  msg);
-    cont++;
+//    msg = 'a' + cont;
+//    td.Reset();
+//    //ac_stream << "$B1" << msg;
+//    rf_pre[0] = msg;
+    //rf_stream->Write(rf_pre, 3);
+Log->Info("TX {}", pkt->GetPacketSize());
+    rf_stream << pkt;
+//    elapsed = td.Elapsed();
+//    Log->Info("T2: {}",  msg);
+//    cont++;
     std::this_thread::sleep_for(std::chrono::seconds(6));
   }
 
