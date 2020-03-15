@@ -115,7 +115,7 @@ void EvologicsBridge::TxWork() {
       phyService >> txpkt;
       Log->debug("TX: FIFO size: {}", phyService.GetRxFifoSize());
 
-      if (txpkt->PacketIsOk()) {
+      if (txpkt->IsOk()) {
         // PACKET OK
         Log->debug("TX: frame is OK, ready to send");
         _TransmitPacket();
